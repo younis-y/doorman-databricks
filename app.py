@@ -43,7 +43,9 @@ REQUEST_COLS = ["id", "requester", "table_name", "reason", "licence_cost", "appr
 with open(os.path.join(os.path.dirname(__file__), "genie_presets.json")) as _f:
     GENIE_PRESETS: list[str] = json.load(_f)
 
-st.set_page_config(page_title="Desk Data Access", layout="wide", initial_sidebar_state="expanded")
+ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+st.set_page_config(page_title="Desk Data Access", page_icon=os.path.join(ASSETS, "favicon.png"),
+                   layout="wide", initial_sidebar_state="expanded")
 
 # --------------------------------------------------------------------------- look
 
@@ -78,7 +80,7 @@ html, body, .stApp, .stApp *:not(code):not(pre):not(.material-icons):not([data-t
 }
 header[data-testid="stHeader"] { background: transparent; }
 #MainMenu, footer, [data-testid="stToolbar"] { visibility: hidden; }
-.block-container { padding-top: 2rem; max-width: 1180px; }
+.block-container { padding-top: 2rem; max-width: 1180px; margin-left: auto !important; margin-right: auto !important; }
 *:focus-visible { outline: 2px solid var(--blue-ink) !important; outline-offset: 2px; }
 .num { font-variant-numeric: tabular-nums; }
 
@@ -89,14 +91,22 @@ h1, h2, h3 { letter-spacing: -0.02em; font-weight: 650 !important; color: var(--
 
 /* Sidebar: sized to its content (Streamlit's default is 21rem). */
 section[data-testid="stSidebar"] { background: var(--card); border-right: 1px solid var(--rule);
+  }
+/* Fixed width only while open; when closed it must give its space back so content can centre. */
+section[data-testid="stSidebar"][aria-expanded="true"] {
   width: 15rem !important; min-width: 15rem !important; max-width: 15rem !important; }
-section[data-testid="stSidebar"] > div { width: 15rem !important; }
+section[data-testid="stSidebar"][aria-expanded="true"] > div { width: 15rem !important; }
+section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; min-width: 0 !important; }
 [data-testid="stSidebarUserContent"] { padding: 0 1rem 1rem; }
 [data-testid="stSidebarNav"] { padding-top: .5rem; }
 /* No header band: the collapse arrow floats in the corner, nav starts level with the top bar. */
 [data-testid="stSidebarHeader"] { height: 0 !important; min-height: 0 !important; padding: 0 !important;
   margin: 0 !important; position: relative; overflow: visible; }
-[data-testid="stSidebarCollapseButton"] { position: absolute; top: .4rem; right: .5rem; z-index: 3; }
+/* Close arrow sits just outside the open sidebar's right edge, always visible. */
+[data-testid="stSidebarCollapseButton"] { position: fixed; top: .75rem; left: calc(15rem + .6rem); right: auto;
+  z-index: 1000; display: block !important; visibility: visible !important; opacity: 1 !important; }
+[data-testid="stSidebarCollapseButton"] button { visibility: visible !important; opacity: 1 !important; }
+[data-testid="stSidebarCollapsedControl"] { top: .75rem !important; left: .6rem !important; }
 /* Sidebar open/close arrow: grey glass, blue edge and a press-in on hover, like the other controls. */
 [data-testid="stSidebarCollapseButton"] button, [data-testid="stSidebarCollapsedControl"] button {
   width: 34px; height: 34px; border-radius: 11px !important; color: var(--ink) !important;
@@ -110,9 +120,14 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
   box-shadow: inset 0 1px 2px rgba(0,0,0,.35), 0 0 0 3px rgba(37,99,235,.18); }
 [data-testid="stSidebarCollapseButton"] button:active, [data-testid="stSidebarCollapsedControl"] button:active {
   transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0,0,0,.45); }
-[data-testid="stSidebarCollapseButton"] { visibility: visible !important; }
+
 [data-testid="stSidebarNavItems"] { padding: 1.9rem 1rem 1rem; margin: 0; }
 [data-testid="stSidebarNavSeparator"] { margin: 0 1rem; }
+/* Three pages always fit: no height cap, no "View more". */
+[data-testid="stSidebarNavItems"] { max-height: none !important; }
+[data-testid="stSidebarNavViewButton"] { display: none !important; }
+/* No anchor-link icons beside section headings. */
+[data-testid="stHeaderActionElements"], [data-testid="stHeadingWithActionElements"] a[href^="#"] { display: none !important; }
 [data-testid="stSidebarUserContent"] { padding-top: 1rem !important; }  /* same gap as above the rule */
 [data-testid="stSidebarNav"] a { border-radius: 999px; padding: .3rem .85rem; margin: .12rem 0;
   border: 1px solid transparent; background: transparent; transition: background .15s ease, border-color .15s ease; }
@@ -262,7 +277,7 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
   padding-bottom: .9rem; border-bottom: 1px solid var(--rule); margin-bottom: 1.1rem; }
 .appname { font-size: .95rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em;
   display: flex; align-items: center; gap: .6rem; }
-.appname .emblem { flex: none; }
+.appname .emblem { flex: none; filter: drop-shadow(0 2px 6px rgba(37,99,235,.35)); }
 .appname span { color: var(--faint); font-weight: 400; }
 .acct { display: flex; align-items: center; gap: .55rem; color: var(--ink); font-size: .86rem; font-weight: 500;
   padding: .28rem .85rem .28rem .3rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.12);
@@ -546,11 +561,9 @@ with st.sidebar:
         st.rerun()
 
 bar_l, bar_r = st.columns([3, 1.4], vertical_alignment="center")
-EMBLEM = ('<svg class="emblem" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">'
-          '<rect width="28" height="28" rx="8" fill="#3D7EFF"/>'
-          '<path d="M9 7.5h8.5v13H9z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>'
-          '<path d="M12 8.6 18.2 7v14L12 19.4z" fill="#fff"/>'
-          '<circle cx="16.6" cy="14" r=".9" fill="#3D7EFF"/></svg>')  # the front door, ajar
+# The front door, ajar: one glass tile shared with the favicon (assets/favicon.png is rendered from it).
+with open(os.path.join(ASSETS, "emblem.svg")) as _f:
+    EMBLEM = _f.read().split("?>")[-1].strip()
 bar_l.markdown(f'<div class="appname">{EMBLEM}Desk Data Access <span>&nbsp;Unity Catalog entitlements</span></div>',
                unsafe_allow_html=True)
 with bar_r:
