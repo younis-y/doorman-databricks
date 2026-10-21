@@ -6,7 +6,6 @@ Everything runs as the app's service principal through db.run_sql. Values travel
 import os
 import re
 import uuid
-from datetime import datetime, timezone
 
 from db import run_sql
 
@@ -65,13 +64,14 @@ def submit_request(requester: str, table_name: str, reason: str) -> str:
     if dup:
         raise ValueError("you already have a pending request for this table")
     rid = str(uuid.uuid4())
-    run_sql(
-        f"INSERT INTO {REQUESTS} SELECT :id, :r, :t, :reason, CAST(:cost AS DOUBLE), :appr, "
-        "'pending', NULL, NULL, ai_classify(:reason, ARRAY('specific business need', 'vague')), "
-        "current_timestamp()",
-        {"id": rid, "r": requester, "t": table_name, "reason": reason.strip(),
-         "cost": tags.get("licence_cost_gbp", "0"), "appr": tags["data_owner"]},
-    )
+    params = {"id": rid, "r": requester, "t": table_name, "reason": reason.strip(),
+              "cost": tags.get("licence_cost_gbp", "0"), "appr": tags["data_owner"]}
+    insert = (f"INSERT INTO {REQUESTS} SELECT :id, :r, :t, :reason, CAST(:cost AS DOUBLE), :appr, "
+              "'pending', NULL, NULL, {label}, current_timestamp()")
+    try:
+        run_sql(insert.format(label="ai_classify(:reason, ARRAY('specific business need', 'vague'))"), params)
+    except Exception:  # noqa: BLE001 - the AI label is a nice-to-have; the request must land
+        run_sql(insert.format(label="NULL"), params)
     return rid
 
 
@@ -90,8 +90,8 @@ def approve(request_id: str, decided_by: str, user_token: str | None = None) -> 
         raise ValueError(f"{row['table_name']} is no longer requestable")
     who = _principal(row["requester"])
     try:
-        run_sql(f"GRANT USE SCHEMA ON SCHEMA {CATALOG}.{SCHEMA} TO {who}")
         run_sql(f"GRANT SELECT ON TABLE {row['table_name']} TO {who}")
+        run_sql(f"GRANT USE SCHEMA ON SCHEMA {CATALOG}.{SCHEMA} TO {who}")
     except Exception as e:  # noqa: BLE001 - the audit row must record whatever went wrong
         _decide(request_id, decided_by, "failed", f"GRANT failed: {e}"[:1000])
         raise
@@ -118,4 +118,4 @@ def revoke(request_id: str, decided_by: str) -> None:
     )
     if not still:
         run_sql(f"REVOKE USE SCHEMA ON SCHEMA {CATALOG}.{SCHEMA} FROM {who}")
-    _decide(request_id, decided_by, "revoked", f"revoked {datetime.now(timezone.utc):%Y-%m-%d %H:%M}Z")
+    _decide(request_id, decided_by, "revoked", "revoked SELECT")

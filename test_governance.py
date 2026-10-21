@@ -118,9 +118,18 @@ class GovernanceTests(unittest.TestCase):
         self.governance.submit_request(self.requester, self.table, "Risk reporting")
         self.assertEqual(self.run_sql.call_args.args[1]["cost"], "0")
 
+    def test_submit_falls_back_to_unlabelled_insert_when_ai_classify_fails(self):
+        self.run_sql.side_effect = [self.tags, [], RuntimeError("classification unavailable"), []]
+        self.governance.submit_request(self.requester, self.table, "Risk reporting")
+        labelled, fallback = (c.args[0] for c in self.run_sql.call_args_list[2:4])
+        self.assertIn("ai_classify(:reason", labelled)
+        self.assertIn("NULL, current_timestamp()", fallback)
+        self.assertNotIn("ai_classify", fallback)
+
     def test_submit_propagates_insert_failure(self):
-        self.run_sql.side_effect = [self.tags, [], RuntimeError("classification unavailable")]
-        with self.assertRaisesRegex(RuntimeError, "classification unavailable"):
+        self.run_sql.side_effect = [self.tags, [], RuntimeError("classification unavailable"),
+                                    RuntimeError("insert failed")]
+        with self.assertRaisesRegex(RuntimeError, "insert failed"):
             self.governance.submit_request(self.requester, self.table, "Risk reporting")
 
     def test_approve_rejects_missing_request(self):
@@ -156,12 +165,13 @@ class GovernanceTests(unittest.TestCase):
             self.governance.approve(self.request_id, self.approver)
         self.assertEqual(self.run_sql.call_count, 2)
 
-    def test_approve_grants_schema_then_table_before_recording_success(self):
+    def test_approve_grants_table_then_schema_before_recording_success(self):
+        # SELECT first: if the second grant fails, no stray USE SCHEMA is left behind.
         self.run_sql.side_effect = [[self.row], self.tags, [], [], []]
         self.governance.approve(self.request_id, self.approver, None)
         self.assertEqual(self.run_sql.call_args_list[2:4], [
-            call(f"GRANT USE SCHEMA ON SCHEMA test_catalog.test_schema TO `{self.requester}`"),
             call(f"GRANT SELECT ON TABLE {self.table} TO `{self.requester}`"),
+            call(f"GRANT USE SCHEMA ON SCHEMA test_catalog.test_schema TO `{self.requester}`"),
         ])
         self.assertEqual(self.run_sql.call_count, 5)
         self.assert_decision("approved", "granted SELECT")

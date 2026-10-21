@@ -1,4 +1,6 @@
 -- Team sierra: data products + request/audit table for the Governed Front Door.
+-- RAN ONCE on 21 Oct 17:40. Do NOT re-run: CREATE OR REPLACE rebuilds the tables and can drop
+-- the grants that the demo depends on.
 -- CSVs are landed in /Volumes/hackathon_bronze/sierra/landing/ first (databricks fs cp).
 
 CREATE VOLUME IF NOT EXISTS hackathon_bronze.sierra.landing;
