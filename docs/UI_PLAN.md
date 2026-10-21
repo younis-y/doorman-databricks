@@ -8,7 +8,7 @@ targeting **`hackathon_gold.sierra`**.
 We own the screens, read queries, configuration, local stub, and demo presentation.
 Younis owns the governance functions, database setup, and real grants. Deployment
 and platform permissions stay with the backend team as described in
-[BACKEND.md](BACKEND.md). This plan includes their latest UI handoff.
+[docs/BACKEND.md](docs/BACKEND.md). This plan includes their latest UI handoff.
 
 ## Existing tools we will reuse
 
@@ -63,7 +63,7 @@ After AC-001–AC-007 pass, add **Ask the audit trail** only when `GENIE_SPACE_I
 is configured. Use the SDK calls specified in AGENTS.md, render the query result
 as a dataframe with its description, and show a clear message if no query result
 is available. Include a free-text question field and the three preset questions
-from [BACKEND.md, section 4](BACKEND.md#4-genie-space-1815-to-1845-in-the-ui-sidebar--genie-agents):
+from [docs/BACKEND.md, section 4](docs/BACKEND.md#4-genie-space-1815-to-1845-in-the-ui-sidebar--genie-agents):
 
 - Who has access to positions right now?
 - What is our total licence spend per month, by table?
@@ -143,5 +143,5 @@ catalog/schema usage permissions while initially lacking table access.
 
 Do not build a query-as-user box: the current forwarded token cannot run SQL.
 Use the SQL editor for the denied-before/allowed-after demonstration, as specified
-in BACKEND.md. Notifications, access expiry, column masks, Lakebase, additional
+in docs/BACKEND.md. Notifications, access expiry, column masks, Lakebase, additional
 pages, and a second app remain outside this UI delivery.

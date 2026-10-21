@@ -46,7 +46,7 @@ and `USE CATALOG` for Patrick (see §1).
 **Patrick's account (`patrick@sierra.example`) is in no group**, so he is the denied analyst: he
 cannot read `hackathon_gold.sierra.positions` until the app grants it. He also cannot run
 the sierra-side SQL in §2 (already done, so it does not matter).
-- Repo: github.com/younis-y/sierra-front-door (ask Younis for collaborator access).
+- Repo: github.com/younis-y/desk-data-access (ask Younis for collaborator access).
 
 ## Your tasks, in order
 
@@ -153,7 +153,7 @@ The deployed URL cannot run SQL until a mentor grants the app's SP. Locally the 
 Younis, who owns the tables and can use the warehouse, so everything works with no mentor:
 
 ```bash
-cd ~/Code/sierra-front-door && source .venv/bin/activate   # streamlit + databricks-sdk + pandas
+cd ~/Code/desk-data-access && source .venv/bin/activate   # streamlit + databricks-sdk + pandas
 GOVERNANCE=live DEV_USER=younis@sierra.example DATABRICKS_CONFIG_PROFILE=hack \
 DATABRICKS_WAREHOUSE_ID=a24300104bf8ac6c streamlit run app.py
 ```

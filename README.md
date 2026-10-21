@@ -67,7 +67,7 @@ one laptop play analyst and owner.
 Tests (offline, SQL mocked):
 
 ```bash
-python3 -m pytest -q test_governance.py tests
+python3 -m pytest -q tests
 ```
 
 ## Layout
@@ -77,9 +77,9 @@ python3 -m pytest -q test_governance.py tests
 | `app.py` | The Streamlit app: three pages, reads only, every change goes through `governance` |
 | `governance.py` | `submit_request`, `approve`, `reject`, `revoke`: the only code that grants |
 | `db.py` | One `run_sql` over the Statement Execution API, as the signed-in user when a token is forwarded |
-| `setup.sql` | Data products, tags and the `access_requests` table (ran once) |
-| `genie_views.sql` | The two views the Genie space is allowed to see |
-| `reset_demo.sql` | Revoke and clear one requester's rows between rehearsals |
+| `sql/setup.sql` | Data products, tags and the `access_requests` table (ran once) |
+| `sql/genie_views.sql` | The two views the Genie space is allowed to see |
+| `sql/reset_demo.sql` | Revoke and clear one requester's rows between rehearsals |
 | `AGENTS.md`, `BACKEND.md` | The briefs the two halves of the team built against |
 | `UI_REVIEW.md` | Review of the front end with a follow-up list |
 

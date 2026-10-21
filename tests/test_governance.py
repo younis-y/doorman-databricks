@@ -1,4 +1,4 @@
-"""Offline governance tests. Run with python3 -m unittest -v test_governance."""
+"""Offline governance tests. Run with python3 -m pytest -q tests."""
 
 import importlib.util
 import os
@@ -15,7 +15,7 @@ class GovernanceTests(unittest.TestCase):
         database = types.ModuleType("db")
         database.run_sql = Mock(return_value=[])
         self.run_sql = database.run_sql
-        source = Path(__file__).with_name("governance.py")
+        source = Path(__file__).resolve().parent.parent / "governance.py"
         spec = importlib.util.spec_from_file_location("governance_under_test", source)
         self.governance = importlib.util.module_from_spec(spec)
         with patch.dict(sys.modules, {"db": database}), patch.dict(
