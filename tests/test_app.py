@@ -39,7 +39,6 @@ def env(monkeypatch):
     fake.client = lambda: None
     monkeypatch.setitem(sys.modules, "db", fake)
     monkeypatch.setenv("DEV_USER", ANALYST)
-    monkeypatch.setenv("DEV_TOOLS", "1")
     monkeypatch.setenv("DATABRICKS_WAREHOUSE_ID", "test")
     monkeypatch.delenv("GENIE_SPACE_ID", raising=False)
     monkeypatch.delenv("STUB_FAIL_GRANT", raising=False)
@@ -110,7 +109,7 @@ def _request_as_analyst(at, row=0, reason="Pricing the GCC basket for the mornin
 
 
 def _switch(at, who, page):
-    at.sidebar.selectbox[0].select(who)
+    at.button(key=f"as::{who}").click()
     at = run(at)
     goto(at, page)
     return run(at)
@@ -144,7 +143,7 @@ def test_reject_needs_note_and_requester_sees_it():
     assert any("Vague reason" in m.value for m in at.markdown)
     at = click(at, "Reject request")
     assert stub_rows(at)[0]["status"] == "pending"
-    at.text_input[0].input("Use the delayed feed instead")
+    next(w for w in at.text_input if w.label.startswith("Rejection note")).input("Use the delayed feed instead")
     at = click(at, "Reject request")
     assert stub_rows(at)[0]["status"] == "rejected"
     at = _switch(at, ANALYST, "catalogue")
@@ -176,7 +175,7 @@ def test_no_act_as_without_dev_user(monkeypatch):
     monkeypatch.delenv("DEV_USER")
     monkeypatch.setenv("GOVERNANCE", "stub")
     at = run()
-    assert len(at.sidebar.selectbox) == 0
+    assert not [w for w in at.selectbox if w.key == "act_as"]
     assert any("Not signed in" in m.value for m in at.markdown)
 
 
@@ -211,7 +210,12 @@ def test_requests_route_to_each_tables_own_owner():
     assert any(b.label == "Approve access" for b in at.button)
 
 
-def test_act_as_hidden_without_dev_tools(monkeypatch):
-    monkeypatch.delenv("DEV_TOOLS")
-    at = run()
-    assert len(at.sidebar.selectbox) == 0
+def test_switching_user_switches_permissions_and_clears_messages():
+    at = _request_as_analyst(run())
+    assert any("Request sent" in x.value for x in at.success)
+    at = _switch(at, OWNER, "catalogue")
+    assert not any("Request sent" in x.value for x in at.success)  # analyst's message is gone
+    df = at.dataframe[0].value
+    assert set(df["Your access"]) == {"No access"}  # owner has no requests of their own
+    at = _switch(at, OWNER, "approvals")
+    assert any(b.label == "Approve access" for b in at.button)  # owner now sees the queue
