@@ -23,9 +23,10 @@ can be rehearsed twice.
   (24), `vendor_faults` (394), `access_requests` (empty). All three data tables carry the tags
   `data_owner`, `sensitivity`, `licence_cost_gbp`, `description`.
 - Raw CSVs: `/Volumes/hackathon_bronze/sierra/landing/`
-- App: `sierra-front-door` (created 18:05, no code yet), URL
-  https://sierra-front-door-7474652817268861.aws.databricksapps.com.
-  Its service principal (SP) client id: **`77fec403-23d6-48ee-809d-a1658acba2cc`**.
+- App: **`desk-data-access`** (replaced `sierra-front-door` at 20:15: a `permissions set` call
+  wiped the owner's CAN_MANAGE on the old app, so it cannot be deployed to; always use
+  `permissions update`), URL https://desk-data-access-7474652817268861.aws.databricksapps.com.
+  Its service principal (SP) client id: **`7f190212-e21d-4beb-84f5-9e4d73a6dfd9`**.
 
 ## Already done (18:50, verified)
 
@@ -115,7 +116,7 @@ scopes and cannot run SQL as the user.
 
 ```
 databricks sync . /Workspace/Users/younis@sierra.example/sierra-front-door -p hack
-databricks apps deploy sierra-front-door --source-code-path /Workspace/Users/younis@sierra.example/sierra-front-door -p hack
+databricks apps deploy desk-data-access --source-code-path /Workspace/Users/younis@sierra.example/sierra-front-door -p hack
 ```
 
 `.venv` is git-ignored, and sync honours `.gitignore`. Deploy only from main.
