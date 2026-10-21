@@ -223,24 +223,24 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 
 /* Loading: no dimming of the page; a small glass pill appears if a rerun takes longer than a moment. */
 [data-stale="true"] { opacity: 1 !important; transition: none !important; }
-.stApp[data-test-script-state="running"]::after {
-  content: "Updating"; position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 2000;
-  padding: .45rem 1rem .45rem 2.15rem; border-radius: 999px; color: var(--ink); font-size: .82rem; font-weight: 600;
+/* Loader: a centred glass panel named after the action, shown by the helper script while a rerun
+   takes longer than a moment. No page dimming. */
+.dda-hud { position: fixed; left: 50%; top: 42%; z-index: 3000; display: flex; align-items: center; gap: .7rem;
+  padding: .85rem 1.25rem .85rem 1.05rem; border-radius: 18px; color: var(--ink); font-size: .95rem; font-weight: 600;
   border: 1px solid transparent;
   background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)) padding-box,
-              linear-gradient(rgba(30,33,40,.62), rgba(30,33,40,.62)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 12px 32px rgba(0,0,0,.4);
-  backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
-  opacity: 0; animation: dda-pill-in .22s ease .25s forwards; }
-.stApp[data-test-script-state="running"]::before {
-  content: ""; position: fixed; top: 25px; left: calc(50% - 2.6rem); z-index: 2001; width: 14px; height: 14px;
-  border-radius: 50%; background: conic-gradient(from 0deg, rgba(127,174,255,0) 0deg, #7FAEFF 300deg, rgba(127,174,255,0) 360deg);
-  -webkit-mask: radial-gradient(circle, transparent 4px, #000 4.5px); mask: radial-gradient(circle, transparent 4px, #000 4.5px);
-  opacity: 0; animation: dda-pill-in .22s ease .25s forwards, dda-spin .8s linear infinite; }
-@keyframes dda-pill-in { to { opacity: 1; } }
+              linear-gradient(rgba(30,33,40,.58), rgba(30,33,40,.58)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 48px rgba(0,0,0,.45);
+  backdrop-filter: blur(26px) saturate(180%); -webkit-backdrop-filter: blur(26px) saturate(180%);
+  opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(.92);
+  transition: opacity .18s ease, transform .34s cubic-bezier(.34, 1.56, .64, 1); }
+.dda-hud.on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.dda-hud .sp { width: 18px; height: 18px; border-radius: 50%; flex: none;
+  background: conic-gradient(from 0deg, rgba(127,174,255,0) 0deg, #7FAEFF 300deg, rgba(127,174,255,0) 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 5.5px, #000 6px); mask: radial-gradient(circle, transparent 5.5px, #000 6px);
+  animation: dda-spin .8s linear infinite; }
 @keyframes dda-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) {
-  .stApp[data-test-script-state="running"]::before { animation: dda-pill-in .01s linear .25s forwards; } }
+@media (prefers-reduced-motion: reduce) { .dda-hud { transition: opacity .18s ease; } .dda-hud .sp { animation-duration: 2.4s; } }
 
 /* Ask the audit trail: preset questions as glass suggestion chips. */
 [data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .genie-chips) .stButton > button {
@@ -413,6 +413,16 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
   backdrop-filter: none !important; color: var(--blue-ink) !important; font-weight: 600; }
 .block-container .stButton > button[kind="secondary"]:hover, .block-container [data-testid="stPopover"] button:hover {
   background: rgba(127,174,255,.10) !important; color: #A9C8FF !important; transform: translateY(1px); }
+/* Reject on the ticket: a grey glass button with the glass rim; blue glass on hover like the rest. */
+[data-testid="stVerticalBlockBorderWrapper"]:has(.quote) .stButton > button[kind="secondary"] {
+  color: var(--ink) !important; border: 1px solid transparent !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)) padding-box,
+              linear-gradient(var(--raised), var(--raised)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 2px 6px rgba(0,0,0,.3) !important; }
+[data-testid="stVerticalBlockBorderWrapper"]:has(.quote) .stButton > button[kind="secondary"]:hover {
+  color: #FFFFFF !important;
+  background: linear-gradient(180deg, rgba(45,105,234,.38), rgba(30,85,212,.30)) padding-box,
+              linear-gradient(var(--raised), var(--raised)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important; }
 /* Approve opens a confirm step but is still the primary action on the ticket. */
 [data-testid="stVerticalBlockBorderWrapper"]:has(.quote) [data-testid="stPopover"] button {
   color: #FFFFFF !important; border: 1px solid #1A47B5 !important;
@@ -777,8 +787,10 @@ BADGE = "" if not UNREAD else f"""
 # Open the account menu on hover (Streamlit popovers are click-only). Same-origin component, so it
 # can reach the app document; it only clicks the pill's own button, and clicking still works.
 components.html("""<script>
-const P = window.parent, d = P.document;
-if (!P.__ddaHoverMenu) {
+// Installs once into the app page itself (not this iframe): Streamlit re-mounts the iframe on reruns,
+// and Chrome stops running callbacks that belong to a detached iframe.
+const install = (P, d) => {
+  if (P.__ddaHoverMenu) return;
   P.__ddaHoverMenu = true;
   let timer = null, ours = false;
   const pill = () => d.querySelector('[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button');
@@ -787,11 +799,11 @@ if (!P.__ddaHoverMenu) {
     const b = pill(); if (!b) return;
     const inside = b.contains(e.target) || e.target.closest('[data-testid="stPopoverBody"]');
     if (inside) {
-      clearTimeout(timer);
+      P.clearTimeout(timer);
       if (b.contains(e.target) && !open()) { ours = true; b.click(); }
     } else if (ours && open()) {
-      clearTimeout(timer);
-      timer = setTimeout(() => { if (ours && open()) { ours = false; pill() && pill().click(); } }, 320);
+      P.clearTimeout(timer);
+      timer = P.setTimeout(() => { if (ours && open()) { ours = false; pill() && pill().click(); } }, 320);
     }
   });
   d.addEventListener("click", (e) => { const b = pill(); if (b && b.contains(e.target) && e.isTrusted) ours = false; }, true);
@@ -831,6 +843,38 @@ if (!P.__ddaHoverMenu) {
   });
   watchFull();
   new P.MutationObserver(watchFull).observe(d.body, { attributes: true, attributeFilter: ["class", "style"], subtree: true });
+  // Loader: a glass panel named after the button just pressed, shown if the rerun takes > 180ms.
+  const hud = d.createElement("div");
+  hud.className = "dda-hud"; hud.setAttribute("role", "status"); hud.setAttribute("aria-live", "polite");
+  hud.innerHTML = '<span class="sp" aria-hidden="true"></span><span class="tx">Updating</span>';
+  d.body.appendChild(hud);
+  const verbs = [["Confirm approve", "Granting access"], ["Reject request", "Rejecting"],
+                 ["Confirm revoke", "Revoking access"], ["Request access", "Sending request"],
+                 ["Refresh data", "Refreshing"], ["Ask", "Asking Genie"]];
+  let pressed = "", showT = null, hideT = null;
+  d.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("button");
+    if (b) pressed = (b.innerText || "").trim(); }, true);
+  const sync = () => {
+    const app = d.querySelector(".stApp");
+    const running = app && app.getAttribute("data-test-script-state") === "running";
+    if (running) {
+      P.clearTimeout(hideT); hideT = null;  // back-to-back reruns keep one panel up, no flicker
+      if (!showT && !hud.classList.contains("on")) {
+        showT = P.setTimeout(() => { const v = verbs.find(([k]) => pressed.startsWith(k));
+          hud.querySelector(".tx").textContent = v ? v[1] : "Updating"; hud.classList.add("on"); showT = null; }, 180);
+      }
+    } else if (!hideT) {
+      hideT = P.setTimeout(() => { P.clearTimeout(showT); showT = null; hud.classList.remove("on"); pressed = ""; hideT = null; }, 160);
+    }
+  };
+  const app0 = d.querySelector(".stApp");
+  if (app0) new P.MutationObserver(sync).observe(app0, { attributes: true, attributeFilter: ["data-test-script-state"] });
+};
+const host = window.parent.document;
+if (!window.parent.__ddaHoverMenu) {
+  const sc = host.createElement("script");
+  sc.textContent = "(" + install.toString() + ")(window, document);";
+  host.head.appendChild(sc);
 }
 </script>""", height=0)
 st.markdown(f"""<div class="topbar-rule"></div><style>
