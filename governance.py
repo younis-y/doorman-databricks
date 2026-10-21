@@ -110,6 +110,8 @@ def revoke(request_id: str, decided_by: str) -> None:
     row = _row(request_id)
     if row["status"] != "approved":
         raise ValueError("only approved requests can be revoked")
+    if row["approver"] != decided_by:
+        raise PermissionError(f"only {row['approver']} can revoke this access")
     who = _principal(row["requester"])
     run_sql(f"REVOKE SELECT ON TABLE {row['table_name']} FROM {who}")
     still = run_sql(

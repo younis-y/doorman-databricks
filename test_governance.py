@@ -196,6 +196,12 @@ class GovernanceTests(unittest.TestCase):
             self.governance.approve(self.request_id, self.approver)
         self.assert_decision("failed", ("GRANT failed: " + "x" * 1500)[:1000])
 
+    def test_revoke_rejects_wrong_approver_without_revoking(self):
+        self.run_sql.side_effect = [[{**self.row, "status": "approved"}]]
+        with self.assertRaises(PermissionError):
+            self.governance.revoke(self.request_id, "intruder@example.com")
+        self.assertEqual(self.run_sql.call_count, 1)
+
     def test_reject_requires_note_without_sql(self):
         for note in (None, "", " \n\t"):
             with self.subTest(note=note):
