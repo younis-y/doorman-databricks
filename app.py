@@ -1,4 +1,4 @@
-"""Desk Data Access: request, approve and audit access to Unity Catalog tables.
+"""Doorman: request, approve and audit access to Unity Catalog tables.
 
 Reads only. Every change goes through governance (submit_request / approve / reject).
 The catalogue is whatever carries a data_owner tag; no table names live in this file.
@@ -44,7 +44,7 @@ with open(os.path.join(os.path.dirname(__file__), "genie_presets.json")) as _f:
     GENIE_PRESETS: list[str] = json.load(_f)
 
 ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-st.set_page_config(page_title="Desk Data Access", page_icon=os.path.join(ASSETS, "emblem.svg"),
+st.set_page_config(page_title="Doorman", page_icon=os.path.join(ASSETS, "emblem.svg"),
                    layout="wide", initial_sidebar_state="expanded")
 
 # --------------------------------------------------------------------------- look
@@ -603,7 +603,7 @@ EMBLEM = ('<svg class="emblem" viewBox="0 0 28 28" fill="none" aria-hidden="true
           '<rect x="7" y="12.5" width="14" height="10" rx="2.2" stroke="#FFFFFF" stroke-width="1.6"/>'
           '<path d="M10.5 12.5V9a3.5 3.5 0 0 1 7 0" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>'
           '<circle cx="14" cy="17.5" r="1.3" fill="#FFFFFF"/></svg>')
-bar_l.markdown(f'<div class="appname">{EMBLEM}<span class="name">Desk Data Access</span></div>',
+bar_l.markdown(f'<div class="appname">{EMBLEM}<span class="name">Doorman</span></div>',
                unsafe_allow_html=True)
 with bar_r:
     with st.popover(ME or "Not signed in"):

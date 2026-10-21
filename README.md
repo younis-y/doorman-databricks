@@ -1,6 +1,7 @@
-# Desk Data Access
+# Doorman
 
-A governed front door for market data on a trading desk, built as a Databricks App. An
+The doorman for market data on a trading desk, built as a Databricks App. (Internally the
+project is still `desk-data-access`.) An
 analyst asks for a table and gives a reason. The table's owner sees the reason and the
 monthly licence cost, then approves or rejects. Approval applies a **real Unity Catalog
 grant**. Every step lands in one audit table that Genie can answer questions about.
@@ -12,7 +13,7 @@ Governed Front Door*.
 
 ```mermaid
 flowchart LR
-    A[Analyst] -->|request + reason| App[Desk Data Access app]
+    A[Analyst] -->|request + reason| App[Doorman app]
     App -->|reads tags| UC[(Unity Catalog)]
     App -->|pending row| Log[(access_requests)]
     Log -->|queue| O[Data owner]
