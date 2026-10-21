@@ -35,6 +35,9 @@ can be rehearsed twice.
 - Genie views exist AND the Genie space is built via the API: id **`01f1cd6fabb61c01a2d9f522b79791d0`**
   ("Desk Data Access audit", two views only, instructions, three sample questions with SQL). §4 is done.
 - `governance.py` tested end to end against the live schema: real GRANT applied and revoked.
+- Audit history seeded through the real approve path (19:40): Jose and Malik hold SELECT on
+  `eod_prices` (£120 each), Malik rejected on `positions`. Genie now answers "£240/month on
+  eod_prices, 2 users". `reset_demo.sql` only touches Patrick's rows, so the seed survives.
 
 Still blocked on the mentor: USE CATALOG for the SP, CAN_USE on the warehouse for the SP,
 and `USE CATALOG` for Patrick (see §1).
