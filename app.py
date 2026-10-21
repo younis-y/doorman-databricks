@@ -202,8 +202,60 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 .stTextInput [data-baseweb="input"]:focus-within, .stTextArea [data-baseweb="textarea"]:focus-within {
   border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(37,99,235,.25); }
 [data-testid="stAlert"] { border-radius: 14px; }
-[data-testid="stAlertContainer"] { border-radius: 14px !important; border: 0 !important;
-  filter: saturate(.45) brightness(.92); }
+/* Messages: glass panels with a faint tint and a status dot (marker element set by flash()). */
+.element-container:has(.flash-mark), [data-testid="stElementContainer"]:has(.flash-mark) { display: none; }
+:is(.element-container, [data-testid="stElementContainer"]):has(.flash-mark) + * [data-testid="stAlertContainer"] {
+  filter: none; border-radius: 14px !important; border: 1px solid transparent !important; color: var(--ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 28px rgba(0,0,0,.24) !important;
+  backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); }
+:is(.element-container, [data-testid="stElementContainer"]):has(.flash-ok) + * [data-testid="stAlertContainer"] {
+  background: linear-gradient(rgba(108,194,138,.10), rgba(108,194,138,.10)) padding-box,
+              linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important; }
+:is(.element-container, [data-testid="stElementContainer"]):has(.flash-err) + * [data-testid="stAlertContainer"] {
+  background: linear-gradient(rgba(224,122,116,.11), rgba(224,122,116,.11)) padding-box,
+              linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important; }
+:is(.element-container, [data-testid="stElementContainer"]):has(.flash-mark) + * [data-testid="stAlertContainer"] p::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .55rem;
+  vertical-align: middle; background: var(--green); }
+:is(.element-container, [data-testid="stElementContainer"]):has(.flash-err) + * [data-testid="stAlertContainer"] p::before {
+  background: var(--red); }
+[data-testid="stAlertContainer"] { border-radius: 14px !important; border: 0 !important; filter: saturate(.45) brightness(.92); }
+
+/* Loading: no dimming of the page; a small glass pill appears if a rerun takes longer than a moment. */
+[data-stale="true"] { opacity: 1 !important; transition: none !important; }
+.stApp[data-test-script-state="running"]::after {
+  content: "Updating"; position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 2000;
+  padding: .45rem 1rem .45rem 2.15rem; border-radius: 999px; color: var(--ink); font-size: .82rem; font-weight: 600;
+  border: 1px solid transparent;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)) padding-box,
+              linear-gradient(rgba(30,33,40,.62), rgba(30,33,40,.62)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 12px 32px rgba(0,0,0,.4);
+  backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+  opacity: 0; animation: dda-pill-in .22s ease .25s forwards; }
+.stApp[data-test-script-state="running"]::before {
+  content: ""; position: fixed; top: 25px; left: calc(50% - 2.6rem); z-index: 2001; width: 14px; height: 14px;
+  border-radius: 50%; background: conic-gradient(from 0deg, rgba(127,174,255,0) 0deg, #7FAEFF 300deg, rgba(127,174,255,0) 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 4px, #000 4.5px); mask: radial-gradient(circle, transparent 4px, #000 4.5px);
+  opacity: 0; animation: dda-pill-in .22s ease .25s forwards, dda-spin .8s linear infinite; }
+@keyframes dda-pill-in { to { opacity: 1; } }
+@keyframes dda-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .stApp[data-test-script-state="running"]::before { animation: dda-pill-in .01s linear .25s forwards; } }
+
+/* Ask the audit trail: preset questions as glass suggestion chips. */
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .genie-chips) .stButton > button {
+  min-height: 4.6rem; border-radius: 16px !important; padding: .6rem 1rem !important; text-align: left;
+  justify-content: flex-start; color: var(--ink) !important; font-weight: 500; line-height: 1.35;
+  border: 1px solid transparent !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)) padding-box,
+              linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 6px 18px rgba(0,0,0,.22) !important; }
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .genie-chips) .stButton > button:hover {
+  background: linear-gradient(180deg, rgba(45,105,234,.22), rgba(30,85,212,.14)) padding-box,
+              linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
+  color: #FFFFFF !important; }
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .genie-chips) .stButton > button p {
+  text-align: left; }
 
 /* Header: wordmark left, identity chip right. */
 .dda-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
@@ -343,7 +395,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
   border: 1px solid transparent !important;
   background: linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 10px 28px rgba(0,0,0,.24) !important; }
-[data-testid="stDataFrame"] > div { border: 1px solid transparent !important; border-radius: 14px !important;
+[data-testid="stDataFrame"] > div:not([data-testid="stElementToolbar"]) { border: 1px solid transparent !important; border-radius: 14px !important;
   background: linear-gradient(var(--bg), var(--bg)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
   box-shadow: 0 10px 28px rgba(0,0,0,.22); }
 .stCode, [data-testid="stCode"] pre { border: 1px solid transparent !important;
@@ -414,6 +466,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 [data-testid="stSidebarNav"] a:active {
   transform: translateY(1px) scale(.96) !important; transition-duration: .08s !important; }
 /* Table toolbar (download, search, full screen): a small glass pill with springy icons. */
+[data-testid="stElementToolbar"] { border: 0 !important; background: transparent !important; box-shadow: none !important; }
 [data-testid="stElementToolbar"] > div {
   background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.6);
   border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 2px 3px;
@@ -669,16 +722,27 @@ if (!P.__ddaHoverMenu) {
   });
   dismiss();
   new P.MutationObserver(dismiss).observe(d.body, { childList: true, subtree: true });
-  // Full-screen tables zoom open and settle back, instead of jumping (skipped with reduced motion).
+  // Full screen as a matched-geometry move (FLIP): the table grows from where it sits on the page to
+  // fill the screen with a spring, and shrinks back into place on exit. Skipped with reduced motion.
   const calm = P.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const spring = "cubic-bezier(.2, .9, .25, 1.12)";
-  const full = new P.WeakMap();
+  const spring = "cubic-bezier(.22, 1.18, .36, 1)";
+  const full = new P.WeakMap(), before = new P.WeakMap();
+  // Record the frame's rect at the moment the toolbar is pressed, before Streamlit re-lays it out.
+  d.addEventListener("pointerdown", (e) => {
+    const f = e.target.closest && e.target.closest('[data-testid="stFullScreenFrame"]');
+    if (f && e.target.closest('[data-testid="stElementToolbar"]')) before.set(f, f.getBoundingClientRect());
+  }, true);
   const watchFull = () => d.querySelectorAll('[data-testid="stFullScreenFrame"]').forEach((f) => {
     const now = P.getComputedStyle(f).position === "fixed";
     if (full.has(f) && full.get(f) !== now && !calm) {
-      f.animate(now ? [{ transform: "scale(.94)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }]
-                    : [{ transform: "scale(1.03)", opacity: .4 }, { transform: "scale(1)", opacity: 1 }],
-                { duration: now ? 320 : 260, easing: spring });
+      const from = before.get(f), to = f.getBoundingClientRect();
+      if (from && to.width && to.height) {
+        const dx = from.left - to.left, dy = from.top - to.top, sx = from.width / to.width, sy = from.height / to.height;
+        f.animate([{ transformOrigin: "0 0", transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, borderRadius: "16px" },
+                   { transformOrigin: "0 0", transform: "none", borderRadius: now ? "0px" : "14px" }],
+                  { duration: now ? 460 : 400, easing: spring });
+      }
+      before.delete(f);
     }
     full.set(f, now);
   });
@@ -705,6 +769,9 @@ def flash(slot: str) -> None:
     msg = st.session_state.get(slot)
     if msg:
         kind, text = msg
+        # Invisible marker so CSS can give the next alert its glass tint (Streamlit gives none).
+        st.markdown(f'<span class="flash-mark flash-{"ok" if kind == "ok" else "err"}"></span>',
+                    unsafe_allow_html=True)
         (st.success if kind == "ok" else st.error)(text)
 
 
@@ -1022,14 +1089,16 @@ def _ask(question: str) -> None:
 
 def genie_box() -> None:
     st.subheader("Ask the audit trail")
-    cols = st.columns(len(GENIE_PRESETS))
-    for i, (c, q) in enumerate(zip(cols, GENIE_PRESETS)):
-        if c.button(q, key=f"genie_preset_{i}", use_container_width=True):
-            with st.spinner("Asking Genie..."):
-                _ask(q)
+    with st.container():
+        st.markdown('<span class="genie-chips"></span>', unsafe_allow_html=True)
+        cols = st.columns(len(GENIE_PRESETS))
+        for i, (c, q) in enumerate(zip(cols, GENIE_PRESETS)):
+            if c.button(q, key=f"genie_preset_{i}", use_container_width=True):
+                with st.spinner("Asking Genie..."):
+                    _ask(q)
     with st.form("genie_form", border=False):
         q = st.text_input("Your question", placeholder="For example: who approved the most requests?")
-        if st.form_submit_button("Ask"):
+        if st.form_submit_button("Ask", type="primary"):
             with st.spinner("Asking Genie..."):
                 _ask(q)
     g = st.session_state.get("genie")
