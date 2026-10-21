@@ -227,3 +227,21 @@ def test_switcher_lists_only_other_people():
     at = run()
     keys = {b.key for b in at.button if (b.key or "").startswith("as::")}
     assert f"as::{ANALYST}" not in keys and f"as::{OWNER}" in keys
+
+
+def _panel(at):
+    return next((m.value for m in at.markdown if 'class="notif-panel"' in m.value), "")
+
+
+def test_bell_counts_pending_for_owner_and_decisions_for_requester():
+    at = _request_as_analyst(run())
+    assert "0 new" in _panel(at)  # the analyst has nothing to act on yet
+    at = _switch(at, OWNER, "approvals")
+    assert "1 new" in _panel(at) and "wants" in _panel(at)
+    assert any('content: "1"' in m.value for m in at.markdown)  # blue badge with the count
+    at = click(at, "Confirm approve")
+    assert "0 new" in _panel(at)  # decided: no longer waiting on the owner
+    at = _switch(at, ANALYST, "catalogue")
+    assert "1 new" in _panel(at) and "Approved" in _panel(at)
+    at = click(at, "Mark all as read")
+    assert "0 new" in _panel(at) and not any('content: "1"' in m.value for m in at.markdown)

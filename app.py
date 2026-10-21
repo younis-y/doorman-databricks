@@ -423,17 +423,50 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
   box-shadow: inset 0 2px 5px rgba(5,20,70,.45) !important; }
 /* Account pill in the top bar: a glass button with the user's initial; opens the switcher. */
 [data-testid="stHorizontalBlock"]:has(.appname) { align-items: center; }
-[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] { display: flex; justify-content: flex-end; }
-[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button {
+[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] { display: flex; justify-content: flex-end; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button {
   min-height: 38px; padding: 0 .9rem 0 .3rem; font-weight: 500; font-size: .88rem; color: var(--ink) !important;
   background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.04) 100%), var(--raised) !important;
   border: 1px solid rgba(255,255,255,.12) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.3) !important; }
-[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button p {
+[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button p {
   display: inline-flex; align-items: center; gap: .55rem; margin: 0; }
-[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button p::before {
+[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button p::before {
   width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; flex: none;
   background: linear-gradient(180deg, #8E8E93, #636366); color: #fff; font-size: .75rem; font-weight: 600; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button:hover {
+  color: #FFFFFF !important; border-color: rgba(127,174,255,.45) !important;
+  background: linear-gradient(180deg, rgba(45,105,234,.38) 0%, rgba(30,85,212,.30) 100%), var(--raised) !important; }
+/* Notification bell: a round glass button, bell drawn with a mask, blue glass badge with the count. */
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] { display: flex; justify-content: flex-end; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button {
+  position: relative; width: 40px; height: 40px; min-height: 40px; padding: 0 !important; border-radius: 50% !important;
+  color: var(--ink) !important; border: 1px solid rgba(255,255,255,.12) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.04) 100%), var(--raised) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.3) !important; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button:hover {
+  border-color: rgba(127,174,255,.45) !important;
+  background: linear-gradient(180deg, rgba(45,105,234,.38) 0%, rgba(30,85,212,.30) 100%), var(--raised) !important; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button p { font-size: 0 !important; margin: 0; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button svg { display: none; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button::before {
+  content: ""; position: absolute; inset: 0; margin: auto; width: 19px; height: 19px; background: #F2F4F7;
+  -webkit-mask: url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/><path d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/></svg>\") center / contain no-repeat; mask: url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/><path d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/></svg>\") center / contain no-repeat; }
+/* The notifications panel: same glass as the account menu, a touch more see-through. */
+[data-testid="stPopoverBody"]:has(.notif-panel) {
+  background: linear-gradient(180deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.02) 100%), rgba(30,33,40,.36) !important;
+  min-width: 21rem !important; max-width: 24rem !important; }
+.notif-panel { padding-bottom: .35rem; }
+.notif-panel .nh { display: flex; justify-content: space-between; align-items: baseline; margin: .1rem .2rem .5rem; }
+.notif-panel .nh b { font-size: .95rem; color: var(--ink); }
+.notif-panel .nh span { color: var(--faint); font-size: .78rem; }
+.notif { display: flex; gap: .6rem; align-items: flex-start; padding: .55rem .6rem; border-radius: 12px; }
+.notif + .notif { margin-top: .15rem; }
+.notif.unread { background: rgba(255,255,255,.045); }
+.notif .dot { margin-top: .42rem; flex: none; }
+.notif div { color: var(--ink); font-size: .88rem; line-height: 1.4; }
+.notif small { display: block; color: var(--muted); font-size: .78rem; margin-top: .1rem; }
+.notif-empty { color: var(--muted); font-size: .88rem; padding: .4rem .3rem .2rem; }
 /* Account list inside the menu: rows, not buttons, until hovered; the current user is blue glass. */
 [data-testid="stPopoverBody"] > div { background: transparent !important; }
 [data-testid="stPopoverBody"] [data-testid="stVerticalBlockBorderWrapper"] {
@@ -667,7 +700,51 @@ with st.sidebar:
         refresh()
         st.rerun()
 
-bar_l, bar_r = st.columns([3, 1.4], vertical_alignment="center")
+DECIDED = ("approved", "rejected", "failed", "revoked")
+
+
+def notifications() -> tuple[list[dict], int]:
+    """What the signed-in user should know about, from the request log alone: requests waiting on
+    their decision (counted until decided) and decisions on their own requests from the last 7 days
+    (counted until marked read). Returns (items, badge count)."""
+    if not ME or REQ.empty:
+        return [], 0
+    seen = st.session_state.setdefault("notif_seen", set())
+    items = []
+    for r in REQ[(REQ["status"] == "pending") & (REQ["approver"] == ME)].itertuples():
+        items.append({"id": r.id, "dot": "pending", "unread": True, "when": r.requested_at,
+                      "text": f"<b>{esc(r.requester)}</b> wants <b>{esc(short(r.table_name))}</b>",
+                      "small": f"{esc(money(r.licence_cost))} / month, {esc(ago(r.requested_at))}. Decide in Approvals."})
+    week = pd.Timestamp.now(tz="UTC") - pd.Timedelta(days=7)
+    mine = REQ[(REQ["requester"] == ME) & REQ["status"].isin(DECIDED) & (REQ["decided_at"] >= week)]
+    for r in mine.itertuples():
+        verb = {"approved": "Approved", "rejected": "Rejected", "failed": "Grant failed", "revoked": "Revoked"}[r.status]
+        note = f" {esc(r.note)}" if r.status in ("rejected", "failed") and r.note else ""
+        items.append({"id": r.id, "dot": r.status, "unread": r.id not in seen, "when": r.decided_at,
+                      "text": f"{verb}: <b>{esc(short(r.table_name))}</b>",
+                      "small": f"By {esc(r.decided_by)}, {esc(ago(r.decided_at))}.{note}"})
+    items.sort(key=lambda i: i["when"], reverse=True)
+    return items, sum(i["unread"] for i in items)
+
+
+def _mark_read(ids: list[str]) -> None:
+    st.session_state.setdefault("notif_seen", set()).update(ids)
+
+
+NOTES, UNREAD = notifications()
+bar_l, bar_bell, bar_r = st.columns([3, .32, 1.4], vertical_alignment="center")
+with bar_bell:
+    with st.popover(f"Notifications, {UNREAD} unread" if UNREAD else "Notifications"):
+        st.markdown(
+            f'<div class="notif-panel"><div class="nh"><b>Notifications</b><span>{UNREAD} new</span></div>'
+            + ("".join(f'<div class="notif{" unread" if n["unread"] else ""}"><span class="dot d-{esc(n["dot"])}"></span>'
+                       f'<div>{n["text"]}<small>{n["small"]}</small></div></div>' for n in NOTES)
+               or '<div class="notif-empty">You\'re all caught up.</div>')
+            + '</div>', unsafe_allow_html=True)
+        decided_unread = [n["id"] for n in NOTES if n["unread"] and n["dot"] != "pending"]
+        if decided_unread:
+            st.button("Mark all as read", key="notif_read", use_container_width=True,
+                      on_click=_mark_read, args=(decided_unread,))
 # Header mark: an open padlock, white line work, no tile. assets/emblem.svg is the same padlock on a
 # blue glass tile for the favicon; change both together.
 EMBLEM = ('<svg class="emblem" viewBox="0 0 28 28" fill="none" aria-hidden="true">'
@@ -691,6 +768,12 @@ with bar_r:
         else:
             st.markdown("Not signed in. Requests and decisions are disabled.")
 initial = esc((ME or "?")[:1].upper()).replace('"', "")
+BADGE = "" if not UNREAD else f"""
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button::after {{
+  content: "{min(UNREAD, 99)}"; position: absolute; top: -5px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px;
+  border-radius: 999px; display: grid; place-items: center; font-size: .68rem; font-weight: 700; color: #FFFFFF;
+  background: linear-gradient(180deg, #3A76F0 0%, #1D4FCB 100%); border: 1px solid rgba(255,255,255,.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 2px 8px rgba(37,99,235,.45); }}"""
 # Open the account menu on hover (Streamlit popovers are click-only). Same-origin component, so it
 # can reach the app document; it only clicks the pill's own button, and clicking still works.
 components.html("""<script>
@@ -698,7 +781,7 @@ const P = window.parent, d = P.document;
 if (!P.__ddaHoverMenu) {
   P.__ddaHoverMenu = true;
   let timer = null, ours = false;
-  const pill = () => d.querySelector('[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button');
+  const pill = () => d.querySelector('[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button');
   const open = () => !!d.querySelector('[data-testid="stPopoverBody"]');
   d.addEventListener("mouseover", (e) => {
     const b = pill(); if (!b) return;
@@ -751,8 +834,9 @@ if (!P.__ddaHoverMenu) {
 }
 </script>""", height=0)
 st.markdown(f"""<div class="topbar-rule"></div><style>
-[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button p::before {{
+[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button p::before {{
   content: "{initial}"; }}
+{BADGE}
 </style>""", unsafe_allow_html=True)
 
 
