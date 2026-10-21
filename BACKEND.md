@@ -133,3 +133,17 @@ Run the script in `AGENTS.md` end to end with the analyst, then `reset_demo.sql`
   `DATABRICKS_WAREHOUSE_ID` value in `app.yaml` works if the SP has CAN_USE.
 - `ai_classify` works on this warehouse (used to flag vague reasons).
 - Never run `apps create` again; the app exists.
+
+## Demo fallback: run the app on Younis's laptop (verified 20:45)
+
+The deployed URL cannot run SQL until a mentor grants the app's SP. Locally the app runs as
+Younis, who owns the tables and can use the warehouse, so everything works with no mentor:
+
+```bash
+cd ~/Code/sierra-front-door && source .venv/bin/activate   # streamlit + databricks-sdk + pandas
+GOVERNANCE=live DEV_USER=younis@sierra.example DATABRICKS_CONFIG_PROFILE=hack \
+DATABRICKS_WAREHOUSE_ID=a24300104bf8ac6c streamlit run app.py
+```
+
+`GOVERNANCE=live` is essential: with `DEV_USER` set the app defaults to the stub. The sidebar
+"Act as" box switches between Patrick (request) and Younis (approve). Grants are real.
