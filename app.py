@@ -967,7 +967,7 @@ def download_box(a) -> None:
     Unity Catalog enforces the grant: without one it fails here too. `a.table` comes from
     the tag-driven catalogue (an allowlist), never from input."""
     slot = f"csv::{a.table}"
-    if st.button(f"Prepare CSV (first {DOWNLOAD_ROWS:,} rows)", key=f"dl::{a.table}"):
+    if st.button(f"Download CSV (first {DOWNLOAD_ROWS:,} rows)", key=f"dl::{a.table}", type="primary"):
         try:
             with st.spinner("Reading from Unity Catalog..."):
                 rows = run_sql(f"SELECT * FROM {a.table} LIMIT {DOWNLOAD_ROWS}")
@@ -976,7 +976,7 @@ def download_box(a) -> None:
             st.session_state.pop(slot, None)
             st.error(f"Couldn't read {a.asset}: {friendly(e)}")
     if slot in st.session_state:
-        st.download_button(f"Download {a.asset}.csv", st.session_state[slot],
+        st.download_button(f"Save {a.asset}.csv", st.session_state[slot], type="primary",
                            file_name=f"{a.asset}.csv", mime="text/csv", key=f"dlb::{a.table}")
 
 
