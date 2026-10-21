@@ -192,8 +192,13 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 [data-baseweb="popover"] li[role="option"]:hover, [data-baseweb="popover"] li[aria-selected="true"] {
   background: rgba(37,99,235,.30) !important; }
 .stTextInput [data-baseweb="input"], .stTextArea [data-baseweb="textarea"] {
-  background: var(--raised) !important; border-radius: var(--radius-sm) !important;
-  border: 1px solid var(--rule) !important; }
+  border: 1px solid transparent !important;
+  background: linear-gradient(var(--raised), var(--raised)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
+  border-radius: var(--radius-sm) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+.stTextInput [data-baseweb="input"] > div, .stTextArea [data-baseweb="textarea"] > div,
+.stTextInput input, .stTextArea textarea { background: transparent !important; }
+.stTextInput [data-baseweb="input"]:focus-within, .stTextArea [data-baseweb="textarea"]:focus-within {
+  border-color: var(--blue) !important; }
 .stTextInput [data-baseweb="input"]:focus-within, .stTextArea [data-baseweb="textarea"]:focus-within {
   border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(37,99,235,.25); }
 [data-testid="stAlert"] { border-radius: 14px; }
@@ -334,8 +339,15 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 /* Liquid glass panels: one material for every surface that holds content. */
 .group, .empty, [data-testid="stMetric"],
 [data-testid="stVerticalBlockBorderWrapper"]:not(.st-emotion-cache-0) {
-  background: #25282E !important; border: 0 !important; box-shadow: none !important; }
-[data-testid="stDataFrame"] > div { border: 0 !important; border-radius: 14px !important; box-shadow: none; }
+  /* Liquid-glass edge: a light rim brighter at the top-left, fading, with a hint of blue; solid fill inside. */
+  border: 1px solid transparent !important;
+  background: linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 10px 28px rgba(0,0,0,.24) !important; }
+[data-testid="stDataFrame"] > div { border: 1px solid transparent !important; border-radius: 14px !important;
+  background: linear-gradient(var(--bg), var(--bg)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.22); }
+.stCode, [data-testid="stCode"] pre { border: 1px solid transparent !important;
+  background: linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important; }
 .stCode, [data-testid="stCode"] pre {
   border: 1px solid rgba(255,255,255,.09); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
 /* Empty states: centred and quiet, an invitation rather than a box of text. */
@@ -598,7 +610,8 @@ with st.sidebar:
         st.rerun()
 
 bar_l, bar_r = st.columns([3, 1.4], vertical_alignment="center")
-# Header mark: an open padlock, white line work, no tile. (assets/emblem.svg still backs the favicon.)
+# Header mark: an open padlock, white line work, no tile. assets/emblem.svg is the same padlock on a
+# blue glass tile for the favicon; change both together.
 EMBLEM = ('<svg class="emblem" viewBox="0 0 28 28" fill="none" aria-hidden="true">'
           '<rect x="7" y="12.5" width="14" height="10" rx="2.2" stroke="#FFFFFF" stroke-width="1.6"/>'
           '<path d="M10.5 12.5V9a3.5 3.5 0 0 1 7 0" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>'
@@ -781,7 +794,7 @@ def product_card(a) -> None:
     body = "".join(f'<div class="g-row"><span>{k}</span><span>{v}</span></div>' for k, v in rows)
     st.markdown(f"""<div class="group">
 <div class="g-head"><div><div class="g-title">{esc(a.asset)}</div><div class="g-desc">{esc(a.description)}</div></div>
-<div class="g-price"><b class="{'zero' if a.cost == 0 else ''}">{esc(money(a.cost))}</b><small>per user, per month</small></div></div>
+<div class="g-price"><b class="{'zero' if a.cost == 0 else ''}">{esc(money(a.cost))}</b><small>per month</small></div></div>
 {body}
 {tracker(state, row, a.owner)}
 </div>""", unsafe_allow_html=True)
@@ -795,7 +808,6 @@ def product_card(a) -> None:
             st.text_area("Reason", key=key, height=76,
                          placeholder="What will you use it for? For example: intraday risk "
                                      "report for the EM book")
-            st.caption("Required. The owner reads it before deciding.")
             st.form_submit_button("Request access", type="primary", disabled=not ME,
                                   on_click=_submit, args=(a.table, a.asset, a.owner, key))
         if not ME:
@@ -807,8 +819,7 @@ def product_card(a) -> None:
 
 
 def catalogue_page() -> None:
-    large_title("Catalogue", "Every table with a data_owner tag in Unity Catalog. Tag a table and it "
-                             "appears here, with no code change.")
+    large_title("Catalogue", "Every tagged table in Unity Catalog.")
     if CATALOGUE_ERROR is not None:
         st.error(f"Couldn't read the catalogue tags: {friendly(CATALOGUE_ERROR)}. "
                  "Check the SQL warehouse is running, then choose Refresh data.")
@@ -846,8 +857,7 @@ def catalogue_page() -> None:
     st.subheader("Your requests")
     mine = REQ[REQ["requester"] == ME] if ME else REQ.iloc[0:0]
     if mine.empty:
-        st.markdown('<div class="empty">You haven\'t requested anything yet. Pick a data product '
-                    'above to start.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="empty">No requests yet.</div>', unsafe_allow_html=True)
         return
     # While pending, note holds the governance reason classifier; only decisions are shown.
     show = pd.DataFrame({
@@ -897,15 +907,14 @@ def _reject(rid: str, requester: str, asset: str, key: str) -> None:
 
 
 def approvals_page() -> None:
-    large_title("Approvals", "Requests for tables you own. Approving runs a real Unity Catalog grant.")
+    large_title("Approvals", "Requests for tables you own.")
     flash("flash_decision")
     if not ME:
         st.warning("Sign in through Databricks to see requests assigned to you.")
         return
     queue = REQ[(REQ["status"] == "pending") & (REQ["approver"] == ME)].sort_values("requested_at")
     if queue.empty:
-        st.markdown('<div class="empty">Nothing waiting on you. New requests for tables you own '
-                    'appear here.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="empty">Nothing waiting on you.</div>', unsafe_allow_html=True)
     else:
         pending_queue(queue)
     active_grants()
@@ -927,11 +936,10 @@ def active_grants() -> None:
     live = REQ[(REQ["status"] == "approved") & (REQ["approver"] == ME)]
     st.subheader("Active access you own")
     if live.empty:
-        st.markdown('<div class="empty">No one holds access through you yet.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="empty">No active access yet.</div>', unsafe_allow_html=True)
         return
     st.markdown(f'<div class="meta" style="margin-bottom:.6rem">{len(live)} active, '
-                f'<b class="num">{esc(money(live["licence_cost"].sum()))}</b> per month in recorded '
-                f'licences</div>', unsafe_allow_html=True)
+                f'<b class="num">{esc(money(live["licence_cost"].sum()))}</b> / month</div>', unsafe_allow_html=True)
     for r in live.itertuples():
         asset = short(r.table_name)
         with st.container(border=True):
@@ -951,7 +959,7 @@ def pending_queue(queue: pd.DataFrame) -> None:
     sens = dict(zip(CATALOGUE["table"], CATALOGUE["sensitivity"]))
     total = queue["licence_cost"].sum()
     st.markdown(f'<div class="meta" style="margin-bottom:.6rem">{len(queue)} waiting, '
-                f'<b class="num">{esc(money(total))}</b> per month if all approved</div>',
+                f'<b class="num">{esc(money(total))}</b> / month if all approved</div>',
                 unsafe_allow_html=True)
     for r in queue.itertuples():
         asset = short(r.table_name)
@@ -975,8 +983,7 @@ def pending_queue(queue: pd.DataFrame) -> None:
                             f"grant and adds **{money(r.licence_cost)}** a month.")
                 st.button("Confirm approve", key=f"approve::{r.id}", type="primary", use_container_width=True,
                           on_click=_approve, args=(r.id, r.requester, asset))
-            c2.text_input("Rejection note (required to reject)", key=key,
-                          placeholder=f"Tell {r.requester} why, for example: use the delayed feed instead")
+            c2.text_input("Rejection note", key=key, placeholder="Required to reject")
             c3.button("Reject request", key=f"reject::{r.id}", use_container_width=True,
                       on_click=_reject, args=(r.id, r.requester, asset, key))
 
@@ -1010,8 +1017,6 @@ def _ask(question: str) -> None:
 
 def genie_box() -> None:
     st.subheader("Ask the audit trail")
-    st.caption("Answered by a Genie space that reads only the request log and entitlement views."
-               + (" It reads the live log, not this local simulation." if SIMULATED else ""))
     cols = st.columns(len(GENIE_PRESETS))
     for i, (c, q) in enumerate(zip(cols, GENIE_PRESETS)):
         if c.button(q, key=f"genie_preset_{i}", use_container_width=True):
@@ -1041,7 +1046,7 @@ def genie_box() -> None:
 
 
 def audit_page() -> None:
-    large_title("Audit", f"Every request in {REQUESTS}, newest first, in {DESK_TZ} time.")
+    large_title("Audit", "Every request, newest first.")
     counts = REQ["status"].value_counts()
     granted = REQ.loc[REQ["status"] == "approved", "licence_cost"].sum()
     m = st.columns([1, 1, 1, 1, 1, 1.6])
@@ -1050,11 +1055,9 @@ def audit_page() -> None:
     m[2].metric("Rejected", int(counts.get("rejected", 0)))
     m[3].metric("Failed", int(counts.get("failed", 0)))
     m[4].metric("Revoked", int(counts.get("revoked", 0)))
-    m[5].metric("Approved licences", f"{money(granted)} / mo",
+    m[5].metric("Recorded licences", f"{money(granted)} / mo",
                 help="Sum of licence costs on approved requests in this log. "
                      "Recorded approvals, not verified billing.")
-    st.caption("Approved licences is the sum of licence costs on approved requests recorded here, "
-               "not verified billing.")
 
     f1, f2 = st.columns(2)
     statuses = list(dict.fromkeys(STATUSES + sorted(s for s in REQ["status"].unique() if s)))
@@ -1068,8 +1071,7 @@ def audit_page() -> None:
         view = view[view["table_name"].isin(pick_t)]
 
     if REQ.empty:
-        st.markdown('<div class="empty">No requests recorded yet. The first request made on the '
-                    'Catalogue page lands here.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="empty">No requests yet.</div>', unsafe_allow_html=True)
     else:
         show = pd.DataFrame({
             "Requested": local(view["requested_at"]),
@@ -1089,7 +1091,6 @@ def audit_page() -> None:
                          "Reason": st.column_config.TextColumn(width="medium"),
                          "Note": st.column_config.TextColumn(width="medium"),
                      })
-        st.caption(f"Showing {len(view)} of {len(REQ)} requests.")
 
     if GENIE_SPACE_ID:
         st.divider()
