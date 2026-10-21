@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 DEV_USER = os.getenv("DEV_USER")
 
@@ -332,9 +333,18 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
   border-color: rgba(127,174,255,.35); box-shadow: inset 0 1px 0 rgba(255,255,255,.14); font-weight: 600; }
 [data-testid="stPopoverBody"] .stButton { margin-bottom: -.6rem; }
 .topbar-rule { border-bottom: 1px solid var(--rule); margin: .35rem 0 1.1rem; }
-[data-testid="stPopoverBody"] { border-radius: 14px !important; border: 1px solid rgba(255,255,255,.12) !important;
-  background: rgba(36,40,47,.88) !important; backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 12px 32px rgba(0,0,0,.45); min-width: 18rem; }
+[data-testid="stPopoverBody"] { border-radius: 16px !important; border: 1px solid rgba(255,255,255,.14) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.52) !important;
+  backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 16px 40px rgba(0,0,0,.45);
+  min-width: 0 !important; width: max-content !important; max-width: 22rem; padding: .45rem !important; }
+/* The account menu hugs its longest email. */
+[data-testid="stPopoverBody"] .stTextInput { min-width: 14rem; }
+/* "Press Enter to apply" hints: Enter still works, the hint is noise. */
+[data-testid="InputInstructions"] { display: none !important; }
+/* The hover helper below is an invisible component; take it out of the layout. */
+[data-testid="stElementContainer"]:has(> iframe[height="0"]), .element-container:has(> iframe[height="0"]),
+div:has(> iframe[title="streamlit_components_v1.html"][height="0"]) { display: none !important; }
 /* Code keeps a monospace face (the one-typeface rule above would otherwise reach its tokens). */
 .stApp pre, .stApp pre *, .stApp code, .stApp code * {
   font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace !important; }
@@ -515,6 +525,29 @@ with bar_r:
         else:
             st.markdown("Not signed in. Requests and decisions are disabled.")
 initial = esc((ME or "?")[:1].upper()).replace('"', "")
+# Open the account menu on hover (Streamlit popovers are click-only). Same-origin component, so it
+# can reach the app document; it only clicks the pill's own button, and clicking still works.
+components.html("""<script>
+const P = window.parent, d = P.document;
+if (!P.__ddaHoverMenu) {
+  P.__ddaHoverMenu = true;
+  let timer = null, ours = false;
+  const pill = () => d.querySelector('[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button');
+  const open = () => !!d.querySelector('[data-testid="stPopoverBody"]');
+  d.addEventListener("mouseover", (e) => {
+    const b = pill(); if (!b) return;
+    const inside = b.contains(e.target) || e.target.closest('[data-testid="stPopoverBody"]');
+    if (inside) {
+      clearTimeout(timer);
+      if (b.contains(e.target) && !open()) { ours = true; b.click(); }
+    } else if (ours && open()) {
+      clearTimeout(timer);
+      timer = setTimeout(() => { if (ours && open()) { ours = false; pill() && pill().click(); } }, 320);
+    }
+  });
+  d.addEventListener("click", (e) => { const b = pill(); if (b && b.contains(e.target) && e.isTrusted) ours = false; }, true);
+}
+</script>""", height=0)
 st.markdown(f"""<div class="topbar-rule"></div><style>
 [data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button p::before {{
   content: "{initial}"; }}
