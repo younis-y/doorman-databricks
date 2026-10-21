@@ -275,7 +275,11 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 .appname { font-size: .95rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em;
   display: flex; align-items: center; gap: .6rem; }
 .appname .emblem { flex: none; width: 48px; height: 48px; }
-.appname .emblem rect { display: none; }  /* door only: no tile, no gloss */
+/* Door only, white on the page: hide the glass tile and its gloss, recolour the frame, leaf and handle. */
+.appname .emblem > rect:nth-of-type(-n+2) { display: none; }
+.appname .emblem > rect:nth-of-type(3) { fill: none; stroke: #FFFFFF; stroke-opacity: 1; stroke-width: 1.5; }
+.appname .emblem > path { fill: #FFFFFF; }
+.appname .emblem > circle { fill: #0B1422; }
 .appname .name { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; color: #FFFFFF; }
 .appname span { color: var(--faint); font-weight: 400; }
 .acct { display: flex; align-items: center; gap: .55rem; color: var(--ink); font-size: .86rem; font-weight: 500;
