@@ -12,6 +12,7 @@ import pandas as pd
 import streamlit as st
 
 DEV_USER = os.getenv("DEV_USER")
+DEV_TOOLS = os.getenv("DEV_TOOLS") == "1"  # "Act as" switcher for local rehearsal only
 
 # Local runs with DEV_USER default to the stub so nothing touches Unity Catalog.
 # GOVERNANCE=live forces the real module, GOVERNANCE=stub forces the simulation.
@@ -48,21 +49,33 @@ st.set_page_config(page_title="Desk Data Access", layout="wide", initial_sidebar
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 /* Graphite surfaces, one action blue (#2563EB: 5.2:1 with white text), Apple-style status hues. */
 :root {
-  --bg: #0E1116; --card: #161A21; --raised: #1E232C; --rule: rgba(255,255,255,.07);
+  --bg: #17191E; --card: #212429; --raised: #2B2F36; --rule: rgba(255,255,255,.07);
   --ink: #F2F4F7; --muted: #A3ACB9; --faint: #8E98A8;
   --blue: #2563EB; --blue-hover: #1D4ED8; --blue-ink: #7FAEFF;
   --green: #30D158; --amber: #FF9F0A; --red: #FF6961;
   --radius: 16px; --radius-sm: 10px;
 }
-html, body, .stApp, .stMarkdown, p, label, button, input, textarea,
-[data-baseweb="select"], [data-testid="stMetric"] {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif !important;
+/* One typeface (HIG typography: minimise typefaces): the system font, SF on Apple devices. */
+html, body, .stApp, .stApp *:not(code):not(pre):not(.material-icons):not([data-testid="stIconMaterial"]) {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue",
+               "Segoe UI", Roboto, Arial, sans-serif !important;
   -webkit-font-smoothing: antialiased;
 }
 .stApp { background: var(--bg); color: var(--ink); }
+.stCode, [data-testid="stCode"] pre { background: var(--card) !important; border-radius: 12px; }
+/* Clicked buttons keep their own colours; keyboard focus still gets the ring. */
+.stButton > button:focus:not(:focus-visible), .stFormSubmitButton > button:focus:not(:focus-visible),
+[data-testid="stPopover"] button:focus:not(:focus-visible) { color: var(--ink) !important; border-color: rgba(255,255,255,.12) !important; }
+.stButton > button[kind="primary"]:focus:not(:focus-visible),
+.stFormSubmitButton > button[kind="primaryFormSubmit"]:focus:not(:focus-visible) { color: #fff !important; border-color: #1A47B5 !important; }
+
+/* Pending: the current segment breathes so a waiting request reads as live. */
+@media (prefers-reduced-motion: no-preference) {
+  .prog.pending .prog-track i.cur { animation: waiting 1.6s ease-in-out infinite; }
+  @keyframes waiting { 50% { opacity: .45; } }
+}
 header[data-testid="stHeader"] { background: transparent; }
 #MainMenu, footer, [data-testid="stToolbar"] { visibility: hidden; }
 .block-container { padding-top: 2rem; max-width: 1180px; }
@@ -74,12 +87,20 @@ h1, h2, h3 { letter-spacing: -0.02em; font-weight: 650 !important; color: var(--
 [data-testid="stHeading"] h3 { font-size: 1.3rem; padding-top: 1.4rem; }
 [data-testid="stCaptionContainer"], .stCaption { color: var(--muted) !important; }
 
-/* Sidebar */
-section[data-testid="stSidebar"] { background: var(--card); border-right: 1px solid var(--rule); }
-[data-testid="stSidebarNav"] a { border-radius: var(--radius-sm); padding: .45rem .7rem; }
-[data-testid="stSidebarNav"] a span { font-size: .95rem; color: var(--ink); }
-[data-testid="stSidebarNav"] a[aria-current="page"] { background: rgba(37,99,235,.16); }
-[data-testid="stSidebarNav"] a[aria-current="page"] span { color: var(--blue-ink); font-weight: 600; }
+/* Sidebar: sized to its content (Streamlit's default is 21rem). */
+section[data-testid="stSidebar"] { background: var(--card); border-right: 1px solid var(--rule);
+  width: 15rem !important; min-width: 15rem !important; max-width: 15rem !important; }
+section[data-testid="stSidebar"] > div { width: 15rem !important; }
+[data-testid="stSidebarUserContent"] { padding: 0 1rem 1rem; }
+[data-testid="stSidebarNav"] { padding-top: .5rem; }
+[data-testid="stSidebarHeader"] { height: 2.75rem !important; min-height: 0 !important; padding: .6rem .75rem 0 !important; margin: 0 !important; }
+[data-testid="stSidebarNavItems"] { padding: .25rem .6rem .5rem; }
+[data-testid="stSidebarUserContent"] { padding-top: .5rem !important; }
+[data-testid="stSidebarNav"] a { border-radius: 999px; padding: .3rem .85rem; margin: .12rem 0;
+  border: 1px solid transparent; background: transparent; transition: background .15s ease, border-color .15s ease; }
+[data-testid="stSidebarNav"] a:hover { background: rgba(255,255,255,.045) !important; border-color: rgba(255,255,255,.08); }
+[data-testid="stSidebarNav"] a:hover span { color: #FFFFFF; }
+
 
 /* Cards: bordered containers become soft rounded panels. */
 /* Unbordered wrappers carry the empty emotion class; only st.container(border=True) differs. */
@@ -88,18 +109,59 @@ section[data-testid="stSidebar"] { background: var(--card); border-right: 1px so
   padding: .4rem .5rem; }
 [data-testid="stDataFrame"] > div { border-radius: 12px; overflow: hidden; border: 1px solid var(--rule); }
 
-/* Controls: 40px targets, rounded, calm until focused. */
+/* Controls: pill buttons with a soft gloss (top highlight, darker base, hairline edge).
+   Hover presses in: 1px down, darker, shadow tightens. Gloss stops keep white text >= 4.8:1. */
 .stButton > button, .stFormSubmitButton > button, [data-testid="stPopover"] button {
-  min-height: 40px; border-radius: var(--radius-sm); font-weight: 600; padding: 0 1.1rem;
-  border: 1px solid var(--rule); background: var(--raised); color: var(--ink);
-  transition: background .15s ease, border-color .15s ease; }
+  min-height: 42px; border-radius: 999px; font-weight: 600; letter-spacing: -0.005em; padding: 0 1.35rem;
+  color: var(--ink);
+  background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.04) 100%), var(--raised);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.35);
+  backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%);
+  transition: transform .12s ease, background .15s ease, box-shadow .15s ease, filter .15s ease; }
 .stButton > button:hover, .stFormSubmitButton > button:hover, [data-testid="stPopover"] button:hover {
-  border-color: rgba(255,255,255,.16); color: var(--ink); }
+  color: #FFFFFF !important; border-color: rgba(127,174,255,.45) !important; transform: translateY(1px);
+  background: linear-gradient(180deg, rgba(45,105,234,.38) 0%, rgba(30,85,212,.30) 100%), var(--raised);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), inset 0 2px 5px rgba(5,20,70,.40), 0 1px 3px rgba(0,0,0,.3); }
+.stButton > button:active, .stFormSubmitButton > button:active, [data-testid="stPopover"] button:active {
+  transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0,0,0,.45); }
 .stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primaryFormSubmit"] {
-  background: var(--blue); border-color: var(--blue); color: #FFFFFF; }
+  color: #FFFFFF; border: 1px solid #1A47B5;
+  background: linear-gradient(180deg, #2D69EA 0%, #2563EB 45%, #1E55D4 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.30), inset 0 -2px 0 rgba(10,30,90,.35),
+              0 3px 10px rgba(37,99,235,.35), 0 1px 2px rgba(0,0,0,.4); }
 .stButton > button[kind="primary"]:hover, .stFormSubmitButton > button[kind="primaryFormSubmit"]:hover {
-  background: var(--blue-hover); border-color: var(--blue-hover); color: #FFFFFF; }
-.stTextInput [data-baseweb="input"], .stTextArea [data-baseweb="textarea"], [data-baseweb="select"] > div {
+  color: #FFFFFF; border-color: #173F9F; transform: translateY(1px);
+  background: linear-gradient(180deg, #2459D8 0%, #1E51CC 50%, #1A47B5 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 2px 5px rgba(5,20,70,.45), 0 1px 4px rgba(37,99,235,.25); }
+.stButton > button[kind="primary"]:active, .stFormSubmitButton > button[kind="primaryFormSubmit"]:active {
+  transform: translateY(2px);
+  background: linear-gradient(180deg, #1E51CC 0%, #1A47B5 100%);
+  box-shadow: inset 0 3px 7px rgba(5,20,70,.55); }
+.stButton > button:disabled, .stFormSubmitButton > button:disabled {
+  opacity: .45; transform: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  .stButton > button, .stFormSubmitButton > button, [data-testid="stPopover"] button { transition: none; }
+  .stButton > button:hover, .stButton > button:active, .stFormSubmitButton > button:hover,
+  .stFormSubmitButton > button:active, [data-testid="stPopover"] button:hover { transform: none; }
+}
+[data-baseweb="select"] > div {
+  border-radius: 14px !important; border: 1px solid rgba(255,255,255,.12) !important; cursor: pointer;
+  background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.035) 100%), var(--raised) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 -1px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.25);
+  backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%);
+  transition: border-color .15s ease, box-shadow .15s ease; }
+[data-baseweb="select"] > div:hover { border-color: rgba(127,174,255,.40) !important; }
+[data-baseweb="select"] > div:focus-within { border-color: var(--blue) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 3px rgba(37,99,235,.28); }
+[data-baseweb="popover"] ul[role="listbox"], [data-baseweb="popover"] [data-baseweb="menu"] {
+  background: rgba(36,40,47,.82) !important; border: 1px solid rgba(255,255,255,.12); border-radius: 14px !important;
+  backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: 0 12px 32px rgba(0,0,0,.45); padding: 4px !important; }
+[data-baseweb="popover"] li[role="option"] { border-radius: 9px; margin: 1px 0; }
+[data-baseweb="popover"] li[role="option"]:hover, [data-baseweb="popover"] li[aria-selected="true"] {
+  background: rgba(37,99,235,.30) !important; }
+.stTextInput [data-baseweb="input"], .stTextArea [data-baseweb="textarea"] {
   background: var(--raised) !important; border-radius: var(--radius-sm) !important;
   border: 1px solid var(--rule) !important; }
 .stTextInput [data-baseweb="input"]:focus-within, .stTextArea [data-baseweb="textarea"]:focus-within {
@@ -119,8 +181,6 @@ section[data-testid="stSidebar"] { background: var(--card); border-right: 1px so
 .dda-who b { color: var(--ink); font-weight: 600; font-size: .9rem; }
 .dda-who.out { padding: .5rem .9rem; color: var(--muted); font-size: .88rem; }
 @media (max-width: 640px) { .quote { text-align: left; } }
-.dda-sim { display: inline-block; background: rgba(255,159,10,.12); color: var(--amber);
-  padding: .3rem .8rem; border-radius: 999px; font-size: .82rem; font-weight: 600; margin: -.2rem 0 1rem; }
 
 /* Pills: tinted fill, no outline, text always present. */
 .badge { display: inline-block; padding: .14rem .6rem; border-radius: 999px; font-size: .75rem;
@@ -141,7 +201,7 @@ section[data-testid="stSidebar"] { background: var(--card); border-right: 1px so
 
 /* The price: the one big number on each card. */
 .quote { text-align: right; }
-.quote .amt { font-size: 2.4rem; font-weight: 700; color: var(--ink); line-height: 1;
+.quote .amt { font-size: 1.6rem; font-weight: 700; color: var(--ink); line-height: 1;
   font-variant-numeric: tabular-nums; letter-spacing: -0.035em; }
 .quote .amt.zero { color: var(--faint); }
 .quote .per { color: var(--faint); font-size: .78rem; margin-top: .3rem; }
@@ -175,6 +235,56 @@ section[data-testid="stSidebar"] { background: var(--card); border-right: 1px so
   padding: .9rem 1.1rem; }
 [data-testid="stMetricLabel"] p { color: var(--muted); font-size: .85rem; }
 [data-testid="stMetricValue"] { font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -0.03em; }
+
+/* Top bar and large title, macOS/iOS style. */
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding-bottom: .9rem; border-bottom: 1px solid var(--rule); margin-bottom: 1.6rem; }
+.appname { font-size: .95rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+.appname span { color: var(--faint); font-weight: 400; }
+.acct { display: flex; align-items: center; gap: .55rem; color: var(--ink); font-size: .86rem; font-weight: 500;
+  padding: .28rem .85rem .28rem .3rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.12);
+  background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.04) 100%), var(--raised);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.3); }
+.acct .av { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  background: linear-gradient(180deg, #8E8E93, #636366); color: #fff; font-size: .72rem; font-weight: 600; }
+.lt { font-size: 2rem; font-weight: 700; letter-spacing: -0.035em; color: var(--ink); line-height: 1.1; margin: 0; }
+.lt-sub { color: var(--muted); font-size: .95rem; margin: .35rem 0 1.4rem; max-width: 70ch; line-height: 1.45; }
+[data-testid="stHeading"] h3 { font-size: 1.15rem !important; font-weight: 600 !important; letter-spacing: -0.015em; }
+
+/* Inset grouped list (HIG lists and tables, grouped style). */
+.group { background: var(--card); border-radius: 14px; overflow: hidden; margin: .25rem 0 .9rem; }
+.g-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.2rem; padding: 1rem 1.1rem .95rem; }
+.g-title { font-size: 1.2rem; font-weight: 650; color: var(--ink); letter-spacing: -0.02em; }
+.g-desc { color: var(--muted); font-size: .92rem; margin-top: .2rem; line-height: 1.45; max-width: 62ch; }
+.g-price { text-align: right; white-space: nowrap; }
+.g-price b { display: block; font-size: 1.45rem; font-weight: 650; color: var(--ink);
+  font-variant-numeric: tabular-nums; letter-spacing: -0.03em; line-height: 1.1; }
+.g-price b.zero { color: var(--muted); }
+.g-price small { color: var(--faint); font-size: .78rem; }
+.g-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  margin-left: 1.1rem; padding: .62rem 1.1rem .62rem 0; border-top: 1px solid var(--rule); font-size: .92rem; }
+.g-row > span:first-child { color: var(--ink); }
+.g-row > span:last-child { color: var(--muted); text-align: right; overflow-wrap: anywhere; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .45rem;
+  vertical-align: middle; background: var(--faint); }
+.d-approved { background: var(--green); } .d-pending { background: var(--amber); }
+.d-rejected, .d-failed { background: var(--red); }
+.g-foot { color: var(--faint); font-size: .8rem; margin: -.5rem 0 1rem 1.1rem; }
+
+/* Determinate progress (HIG progress indicators): one track, three segments. */
+.prog { padding: .95rem 1.1rem 1rem; border-top: 1px solid var(--rule); }
+.prog-track { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.prog-track i { height: 6px; border-radius: 3px; background: rgba(255,255,255,.10); }
+.prog-track i.on { background: var(--green); }
+.prog.pending .prog-track i.on { background: var(--amber); }
+.prog.rejected .prog-track i.on, .prog.failed .prog-track i.on { background: var(--red); }
+.prog.revoked .prog-track i.on { background: var(--faint); }
+.prog.rejected .prog-track i.on:not(.cur), .prog.failed .prog-track i.on:not(.cur) { background: var(--green); }
+.prog-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: .5rem; font-size: .8rem; color: var(--faint); }
+.prog-steps span.cur { color: var(--ink); font-weight: 600; }
+.prog-steps span:nth-child(2) { text-align: center; } .prog-steps span:nth-child(3) { text-align: right; }
+.prog-note { margin-top: .7rem; font-size: .9rem; color: var(--ink); line-height: 1.45; }
+.prog-note em { font-style: normal; color: var(--muted); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -301,7 +411,7 @@ except Exception as e:  # noqa: BLE001 - shown on screen
     REQ, REQ_ERROR = pd.DataFrame(columns=REQUEST_COLS), e
 
 ME = forwarded or DEV_USER
-if DEV_USER and not forwarded:  # local only: never rendered behind Databricks Apps auth
+if DEV_TOOLS and DEV_USER and not forwarded:  # opt-in local tool, never behind Databricks Apps auth
     people = [DEV_USER, *CATALOGUE["owner"].tolist(),
               *(REQ["requester"].tolist() if not REQ.empty else [])]
     people = list(dict.fromkeys(p for p in people if p))
@@ -314,27 +424,27 @@ if DEV_USER and not forwarded:  # local only: never rendered behind Databricks A
             ME = st.text_input("Email", key="act_as_other", placeholder="analyst@desk.com").strip() or None
         else:
             ME = pick
-        st.caption("Local development only. Hidden in the deployed app.")
+        if SIMULATED:
+            st.caption("Simulated: no permissions are changed.")
         st.divider()
 
 with st.sidebar:
-    if st.button("Refresh data", use_container_width=True,
-                 help="Re-read Unity Catalog tags and the request log"):
+    if st.button("Refresh data", use_container_width=True):
         refresh()
         st.rerun()
 
 st.markdown(f"""
-<div class="dda-head">
-  <div>
-    <div class="dda-title">Desk Data Access</div>
-    <div class="dda-sub">Market-data entitlements, owned, reasoned and recorded in Unity Catalog</div>
-  </div>
-  {(f'<div class="dda-who"><span class="av" aria-hidden="true">{esc(ME[:1].upper())}</span>'
-    f'<span><span class="lab">Signed in as</span><br><b>{esc(ME)}</b></span></div>') if ME else
-   '<div class="dda-who out"><b>Not signed in</b>, requests and decisions are disabled</div>'}
+<div class="topbar">
+  <div class="appname">Desk Data Access <span>&nbsp;Unity Catalog entitlements</span></div>
+  {(f'<div class="acct" title="Signed in"><span class="av" aria-hidden="true">{esc(ME[:1].upper())}</span>'
+    f'<span>{esc(ME)}</span></div>') if ME else
+   '<div class="acct">Not signed in. Requests and decisions are disabled.</div>'}
 </div>
-{'<div class="dda-sim">Local simulation — no access permissions changed</div>' if SIMULATED else ''}
 """, unsafe_allow_html=True)
+
+
+def large_title(title: str, sub: str) -> None:
+    st.markdown(f'<h1 class="lt">{esc(title)}</h1><p class="lt-sub">{esc(sub)}</p>', unsafe_allow_html=True)
 
 if REQ_ERROR is not None:
     st.error(f"Couldn't read the request log ({REQUESTS}): {friendly(REQ_ERROR)}. "
@@ -377,30 +487,32 @@ ACCESS_LABEL = {"none": "No access", "pending": "Pending", "approved": "Granted"
 
 
 def tracker(state: str, row: dict | None, owner: str) -> str:
-    """Three-step strip: Requested, Owner review, Access granted. Every step carries text."""
-    at = lambda k: esc(ago(row[k])) if row is not None and row.get(k) is not None and not pd.isna(row[k]) else ""
-    who = esc((row or {}).get("decided_by") or owner)
-    steps = {
-        "none":     [("todo", "Request", "Tell the owner why you need it"),
-                     ("todo", "Owner review", esc(owner)), ("todo", "Access granted", "SELECT in Unity Catalog")],
-        "pending":  [("done", "Requested", at("requested_at")),
-                     ("now", "Owner review", f"Waiting on {esc(owner)}"), ("todo", "Access granted", "Not yet")],
-        "approved": [("done", "Requested", at("requested_at")),
-                     ("done", "Approved", f"by {who}"), ("done", "Access granted", at("decided_at"))],
-        "rejected": [("done", "Requested", at("requested_at")),
-                     ("bad", "Rejected", f"by {who}"), ("todo", "Access granted", "Not granted")],
-        "failed":   [("done", "Requested", at("requested_at")),
-                     ("done", "Approved", f"by {who}"), ("bad", "Grant failed", at("decided_at"))],
-        "revoked":  [("done", "Requested", at("requested_at")),
-                     ("done", "Approved", "earlier"), ("bad", "Revoked", at("decided_at"))],
-    }.get(state)
-    parts = []
-    for i, (kind, title, sub) in enumerate(steps):
-        if i:
-            parts.append(f'<div class="bar {"done" if kind in ("done", "now", "bad") else ""}"></div>')
-        parts.append(f'<div class="step {kind}"><span class="dot" aria-hidden="true"></span>'
-                     f'<div><b>{esc(title)}</b><small>{sub}</small></div></div>')
-    return f'<div class="track" role="list" aria-label="Access progress">{"".join(parts)}</div>'
+    """Determinate three-segment progress: Requested, Owner review, Access granted."""
+    def at(k):
+        v = (row or {}).get(k)
+        return "" if v is None or pd.isna(v) else ago(v)
+    who = (row or {}).get("decided_by") or owner
+    filled, _colour, labels, cur, note = {
+        "none":     (0, "--faint", ["Request", "Owner review", "Access granted"], 0,
+                     f"Send a reason and {owner} decides."),
+        "pending":  (2, "--amber", ["Requested", "Owner review", "Access granted"], 1,
+                     f"Waiting on {owner}. <em>Sent {at('requested_at')}.</em>"),
+        "approved": (3, "--green", ["Requested", "Approved", "Access granted"], 2,
+                     f"Granted by {who}. <em>{at('decided_at').capitalize()}.</em>"),
+        "rejected": (2, "--red", ["Requested", "Rejected", "Access granted"], 1,
+                     f"Rejected by {who}. <em>{at('decided_at').capitalize()}.</em>"),
+        "failed":   (3, "--red", ["Requested", "Approved", "Grant failed"], 2,
+                     f"Approved by {who}, but the grant failed. <em>{at('decided_at').capitalize()}.</em>"),
+        "revoked":  (3, "--faint", ["Requested", "Approved", "Revoked"], 2,
+                     f"Access revoked by {who}. <em>{at('decided_at').capitalize()}.</em>"),
+    }[state]
+    segs = "".join(f'<i class="{"on" if i < filled else ""} {"cur" if i == cur else ""}"></i>' for i in range(3))
+    steps = "".join(f'<span class="{"cur" if i == cur else ""}">{esc(t)}</span>' for i, t in enumerate(labels))
+    # note carries pre-built <em>; escape the dynamic parts only
+    safe = note.replace(owner, esc(owner)).replace(str(who), esc(who)) if note else ""
+    return (f'<div class="prog {state}" role="img" aria-label="{esc(labels[cur])}, step {cur + 1} of 3">'
+            f'<div class="prog-track">{segs}</div>'
+            f'<div class="prog-steps">{steps}</div><div class="prog-note">{safe}</div></div>')
 
 
 def _submit(table: str, asset: str, owner: str, key: str) -> None:
@@ -424,64 +536,47 @@ def _submit(table: str, asset: str, owner: str, key: str) -> None:
 
 def product_card(a) -> None:
     state, row = access_of(a.table)
-    with st.container(border=True):
-        left, right = st.columns([4, 1.3])
-        with left:
-            st.markdown(f"""
-<div class="asset">{esc(a.asset)} &nbsp;{badge(a.sensitivity)} {badge(ACCESS_LABEL[state], "acc-" + state)}</div>
-<div class="fq">{esc(a.table)}</div>
-<div class="desc">{esc(a.description)}</div>
-<div class="meta">Data owner <b>{esc(a.owner)}</b>, from the Unity Catalog tag</div>
-""", unsafe_allow_html=True)
-        with right:
-            st.markdown(f"""<div class="quote"><div class="amt {'zero' if a.cost == 0 else ''}">
-{esc(money(a.cost))}</div><div class="per">licence per user, per month</div></div>""",
-                        unsafe_allow_html=True)
+    note = str((row or {}).get("note") or "")
+    rows = [("Owner", esc(a.owner)), ("Sensitivity", esc(a.sensitivity.capitalize())),
+            ("Your access", f'<span class="dot d-{esc(state)}"></span>{esc(ACCESS_LABEL[state])}'),
+            ("Location", esc(a.table))]
+    if state in ("rejected", "failed", "revoked") and note:
+        rows.append(("Note from owner" if state == "rejected" else "Detail", esc(note)))
+    if state == "pending":
+        rows.append(("Your reason", esc(row["reason"])))
+        if note.strip().lower() == "vague":
+            rows.append(("Reason check", '<span class="dot d-pending"></span>Flagged as vague'))
+    body = "".join(f'<div class="g-row"><span>{k}</span><span>{v}</span></div>' for k, v in rows)
+    st.markdown(f"""<div class="group">
+<div class="g-head"><div><div class="g-title">{esc(a.asset)}</div><div class="g-desc">{esc(a.description)}</div></div>
+<div class="g-price"><b class="{'zero' if a.cost == 0 else ''}">{esc(money(a.cost))}</b><small>per user, per month</small></div></div>
+{body}
+{tracker(state, row, a.owner)}
+</div>""", unsafe_allow_html=True)
+    if state == "approved":
+        st.caption("Query it in the SQL editor")
+        st.code(f"SELECT * FROM {a.table} LIMIT 5", language="sql")
 
-        st.markdown(tracker(state, row, a.owner), unsafe_allow_html=True)
-
-        note = str((row or {}).get("note") or "")
-        if state == "pending":
-            vague = note.strip().lower() == "vague"
-            st.markdown(f'<div class="state s-pending">Your request is with <b>{esc(a.owner)}</b>, sent '
-                        f'{esc(ago(row["requested_at"]))}. It turns to Granted as soon as they approve.'
-                        + (' <br>The reason was flagged as vague; a specific reason gets a faster yes.'
-                           if vague else '') + '</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="reason">{esc(row["reason"])}</div>', unsafe_allow_html=True)
-        elif state == "approved":
-            st.markdown(f'<div class="state s-approved">Granted {esc(ago(row["decided_at"]))} by '
-                        f'<b>{esc(row["decided_by"])}</b>. Unity Catalog now lets you read this table.</div>',
-                        unsafe_allow_html=True)
-            st.caption("Try it in the SQL editor:")
-            st.code(f"SELECT * FROM {a.table} LIMIT 5", language="sql")
-        elif state in ("rejected", "failed", "revoked"):
-            what = {"rejected": f"Rejected by {row['decided_by']}", "failed": "Approved, but the grant failed",
-                    "revoked": f"Access revoked by {row['decided_by']}"}[state]
-            st.markdown(f'<div class="state s-{state}"><b>{esc(what)}</b>'
-                        + (f': {esc(note)}' if note else '') + '. You can request again below.</div>',
-                        unsafe_allow_html=True)
-
-        if state not in ("pending", "approved"):
-            key = f"reason::{a.table}"
-            with st.form(f"request::{a.table}", clear_on_submit=False, border=False):
-                st.text_area("Reason for access", key=key, height=90,
-                             placeholder="What will you use it for? For example: intraday risk "
-                                         "report for the EM book",
-                             help="Required. The data owner reads this before deciding.")
-                st.form_submit_button("Request access", type="primary", disabled=not ME,
-                                      on_click=_submit, args=(a.table, a.asset, a.owner, key))
-            if not ME:
-                st.caption("Sign in through Databricks to request access.")
-        # A sent-request confirmation is stale once the owner has decided.
-        msg = st.session_state.get("flash_request")
-        if msg and (msg[0] == "err" or state == "pending"):
-            flash("flash_request")
+    if state not in ("pending", "approved"):
+        key = f"reason::{a.table}"
+        with st.form(f"request::{a.table}", clear_on_submit=False, border=False):
+            st.text_area("Reason", key=key, height=76,
+                         placeholder="What will you use it for? For example: intraday risk "
+                                     "report for the EM book")
+            st.caption("Required. The owner reads it before deciding.")
+            st.form_submit_button("Request access", type="primary", disabled=not ME,
+                                  on_click=_submit, args=(a.table, a.asset, a.owner, key))
+        if not ME:
+            st.caption("Sign in through Databricks to request access.")
+    # A sent-request confirmation is stale once the owner has decided.
+    msg = st.session_state.get("flash_request")
+    if msg and (msg[0] == "err" or state == "pending"):
+        flash("flash_request")
 
 
 def catalogue_page() -> None:
-    st.subheader("Catalogue")
-    st.caption("Every table here carries a data_owner tag in Unity Catalog. Tag a table and it "
-               "appears; no code change.")
+    large_title("Catalogue", "Every table with a data_owner tag in Unity Catalog. Tag a table and it "
+                             "appears here, with no code change.")
     if CATALOGUE_ERROR is not None:
         st.error(f"Couldn't read the catalogue tags: {friendly(CATALOGUE_ERROR)}. "
                  "Check the SQL warehouse is running, then choose Refresh data.")
@@ -508,8 +603,7 @@ def catalogue_page() -> None:
     st.subheader("Request access")
     desks = sorted(cat["desk"].unique())
     c1, c2 = st.columns([1, 2])
-    pick_desk = c1.selectbox("Desk", ["All desks", *desks], key="desk_pick",
-                             help="Grouped by the table's domain tag, or by its sensitivity")
+    pick_desk = c1.selectbox("Desk", ["All desks", *desks], key="desk_pick")
     options = cat if pick_desk == "All desks" else cat[cat["desk"] == pick_desk]
     # Labels must stay stable across reruns: Streamlit 1.38 keys the widget on them.
     labels = {r.table: f"{r.asset}  ({money(r.cost)} / month)" for r in options.itertuples()}
@@ -571,9 +665,7 @@ def _reject(rid: str, requester: str, asset: str, key: str) -> None:
 
 
 def approvals_page() -> None:
-    st.subheader("Approvals")
-    st.caption("Requests waiting on your decision as data owner. Approving runs a real Unity "
-               "Catalog grant for the requester.")
+    large_title("Approvals", "Requests for tables you own. Approving runs a real Unity Catalog grant.")
     flash("flash_decision")
     if not ME:
         st.warning("Sign in through Databricks to see requests assigned to you.")
@@ -636,7 +728,7 @@ def pending_queue(queue: pd.DataFrame) -> None:
             vague = badge("Vague reason", "vague") if str(r.note).strip().lower() == "vague" else ""
             with left:
                 st.markdown(f"""
-<div class="asset">{esc(asset)} &nbsp;{badge(sens.get(r.table_name, 'unclassified'))} {vague}</div>
+<div class="asset">{esc(asset)} <span class="meta">&nbsp;{esc(sens.get(r.table_name, 'unclassified').capitalize())}</span> {vague}</div>
 <div class="meta"><b>{esc(r.requester)}</b> asked {esc(ago(r.requested_at))}</div>
 <div class="reason">{esc(r.reason)}</div>
 """, unsafe_allow_html=True)
@@ -714,9 +806,7 @@ def genie_box() -> None:
 
 
 def audit_page() -> None:
-    st.subheader("Audit")
-    st.caption(f"Every request in {REQUESTS}, newest first, in {DESK_TZ} time. "
-               "One table is both the queue and the receipt.")
+    large_title("Audit", f"Every request in {REQUESTS}, newest first, in {DESK_TZ} time.")
     counts = REQ["status"].value_counts()
     granted = REQ.loc[REQ["status"] == "approved", "licence_cost"].sum()
     m = st.columns([1, 1, 1, 1, 1, 1.6])
@@ -779,4 +869,13 @@ pg = st.navigation([
     st.Page(approvals_page, title=f"Approvals ({waiting})" if waiting else "Approvals", url_path="approvals"),
     st.Page(audit_page, title="Audit", url_path="audit"),
 ])
+# Streamlit 1.38 gives the current nav link no attribute, so mark it by its href.
+here = f'[data-testid="stSidebarNav"] a[href$="/{pg.url_path}"]'
+st.markdown(f"""<style>
+{here}, {here}:hover {{
+  background: linear-gradient(180deg, rgba(45,105,234,.34) 0%, rgba(30,85,212,.24) 100%) !important;
+  border-color: rgba(127,174,255,.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 2px 8px rgba(37,99,235,.18); }}
+{here} span {{ color: #FFFFFF !important; font-weight: 600; }}
+</style>""", unsafe_allow_html=True)
 pg.run()

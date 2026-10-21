@@ -39,6 +39,7 @@ def env(monkeypatch):
     fake.client = lambda: None
     monkeypatch.setitem(sys.modules, "db", fake)
     monkeypatch.setenv("DEV_USER", ANALYST)
+    monkeypatch.setenv("DEV_TOOLS", "1")
     monkeypatch.setenv("DATABRICKS_WAREHOUSE_ID", "test")
     monkeypatch.delenv("GENIE_SPACE_ID", raising=False)
     monkeypatch.delenv("STUB_FAIL_GRANT", raising=False)
@@ -81,7 +82,7 @@ def test_catalogue_is_tag_driven():
     df = at.dataframe[0].value
     assert list(df["Asset"]) == ["eod_prices", "positions", "vendor_faults"]
     assert "scratch" not in df["Asset"].tolist()
-    assert any("Local simulation" in m.value for m in at.markdown)
+    assert not any("Local" in m.value for m in at.markdown)
     src = open(APP).read()
     assert "positions" not in src and "eod_prices" not in src  # AC-001 grep
     assert "GRANT" not in src and "REVOKE" not in src  # AC-005: only governance grants
@@ -196,8 +197,8 @@ def test_tracker_states_for_requester():
     at = click(at, "Approve access")
     at = _switch(at, ANALYST, "catalogue")
     at = select_asset(at, 0)
-    assert any("b-acc-approved" in m.value for m in at.markdown)
-    assert any("step done" in m.value and "Access granted" in m.value for m in at.markdown)
+    card = next(m.value for m in at.markdown if 'class="group"' in m.value)
+    assert "d-approved" in card and "Granted by" in card and 'prog approved' in card
     assert any("SELECT * FROM hackathon_gold.sierra.eod_prices" in c.value for c in at.code)
 
 
@@ -208,3 +209,9 @@ def test_requests_route_to_each_tables_own_owner():
     assert not any(b.label == "Approve access" for b in at.button)
     at = _switch(at, "other.owner@desk.com", "approvals")
     assert any(b.label == "Approve access" for b in at.button)
+
+
+def test_act_as_hidden_without_dev_tools(monkeypatch):
+    monkeypatch.delenv("DEV_TOOLS")
+    at = run()
+    assert len(at.sidebar.selectbox) == 0
