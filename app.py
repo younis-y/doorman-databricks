@@ -415,7 +415,9 @@ def refresh() -> None:
 
 
 def friendly(e: Exception) -> str:
-    msg = str(e).strip() or e.__class__.__name__
+    # First line only, capped: SDK errors can embed the full request log, including the
+    # Authorization header, and that must never be rendered.
+    msg = (str(e).strip() or e.__class__.__name__).splitlines()[0][:300]
     return msg[0].upper() + msg[1:]
 
 
