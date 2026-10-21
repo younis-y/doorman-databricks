@@ -93,8 +93,12 @@ section[data-testid="stSidebar"] { background: var(--card); border-right: 1px so
 section[data-testid="stSidebar"] > div { width: 15rem !important; }
 [data-testid="stSidebarUserContent"] { padding: 0 1rem 1rem; }
 [data-testid="stSidebarNav"] { padding-top: .5rem; }
-[data-testid="stSidebarHeader"] { height: 2.75rem !important; min-height: 0 !important; padding: .6rem .75rem 0 !important; margin: 0 !important; }
-[data-testid="stSidebarNavItems"] { padding: .25rem .6rem .5rem; }
+/* No header band: the collapse arrow floats in the corner, nav starts level with the top bar. */
+[data-testid="stSidebarHeader"] { height: 0 !important; min-height: 0 !important; padding: 0 !important;
+  margin: 0 !important; position: relative; overflow: visible; }
+[data-testid="stSidebarCollapseButton"] { position: absolute; top: .4rem; right: .5rem; z-index: 3; }
+[data-testid="stSidebarNavItems"] { padding: 1.9rem 1rem .5rem; margin: 0; }
+[data-testid="stSidebarNavSeparator"] { margin: 0 1rem; }
 [data-testid="stSidebarUserContent"] { padding-top: .5rem !important; }
 [data-testid="stSidebarNav"] a { border-radius: 999px; padding: .3rem .85rem; margin: .12rem 0;
   border: 1px solid transparent; background: transparent; transition: background .15s ease, border-color .15s ease; }
@@ -238,7 +242,7 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 
 /* Top bar and large title, macOS/iOS style. */
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
-  padding-bottom: .9rem; border-bottom: 1px solid var(--rule); margin-bottom: 1.6rem; }
+  padding-bottom: .9rem; border-bottom: 1px solid var(--rule); margin-bottom: 1.1rem; }
 .appname { font-size: .95rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
 .appname span { color: var(--faint); font-weight: 400; }
 .acct { display: flex; align-items: center; gap: .55rem; color: var(--ink); font-size: .86rem; font-weight: 500;
@@ -285,6 +289,24 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 .prog-steps span:nth-child(2) { text-align: center; } .prog-steps span:nth-child(3) { text-align: right; }
 .prog-note { margin-top: .7rem; font-size: .9rem; color: var(--ink); line-height: 1.45; }
 .prog-note em { font-style: normal; color: var(--muted); }
+/* Liquid glass panels: one material for every surface that holds content. */
+.group, .empty, [data-testid="stMetric"],
+[data-testid="stVerticalBlockBorderWrapper"]:not(.st-emotion-cache-0) {
+  background: linear-gradient(180deg, rgba(255,255,255,.075) 0%, rgba(255,255,255,.025) 60%, rgba(255,255,255,.015) 100%),
+              var(--card) !important;
+  border: 1px solid rgba(255,255,255,.09) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 8px 24px rgba(0,0,0,.22), 0 1px 2px rgba(0,0,0,.3);
+  backdrop-filter: blur(18px) saturate(150%); -webkit-backdrop-filter: blur(18px) saturate(150%); }
+[data-testid="stDataFrame"] > div {
+  border: 1px solid rgba(255,255,255,.09) !important; border-radius: 14px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 24px rgba(0,0,0,.22); }
+.stCode, [data-testid="stCode"] pre {
+  border: 1px solid rgba(255,255,255,.09); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+/* Empty states: centred and quiet, an invitation rather than a box of text. */
+.empty { text-align: center; padding: 1.6rem 1.3rem !important; color: var(--muted); font-size: .95rem; }
+[data-testid="stMetric"] { padding: 1rem 1.15rem !important; }
+[data-testid="stMetricValue"] > div { font-size: 2rem; }
+.lt { margin-top: -.2rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
