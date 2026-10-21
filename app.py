@@ -243,7 +243,9 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 /* Top bar and large title, macOS/iOS style. */
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
   padding-bottom: .9rem; border-bottom: 1px solid var(--rule); margin-bottom: 1.1rem; }
-.appname { font-size: .95rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+.appname { font-size: .95rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: .6rem; }
+.appname .emblem { flex: none; }
 .appname span { color: var(--faint); font-weight: 400; }
 .acct { display: flex; align-items: center; gap: .55rem; color: var(--ink); font-size: .86rem; font-weight: 500;
   padding: .28rem .85rem .28rem .3rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.12);
@@ -508,7 +510,12 @@ with st.sidebar:
         st.rerun()
 
 bar_l, bar_r = st.columns([3, 1.4], vertical_alignment="center")
-bar_l.markdown('<div class="appname">Desk Data Access <span>&nbsp;Unity Catalog entitlements</span></div>',
+EMBLEM = ('<svg class="emblem" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">'
+          '<rect width="28" height="28" rx="8" fill="#3D7EFF"/>'
+          '<path d="M9 7.5h8.5v13H9z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>'
+          '<path d="M12 8.6 18.2 7v14L12 19.4z" fill="#fff"/>'
+          '<circle cx="16.6" cy="14" r=".9" fill="#3D7EFF"/></svg>')  # the front door, ajar
+bar_l.markdown(f'<div class="appname">{EMBLEM}Desk Data Access <span>&nbsp;Unity Catalog entitlements</span></div>',
                unsafe_allow_html=True)
 with bar_r:
     with st.popover(ME or "Not signed in"):
