@@ -48,85 +48,133 @@ st.set_page_config(page_title="Desk Data Access", layout="wide", initial_sidebar
 
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Graphite surfaces, one action blue (#2563EB: 5.2:1 with white text), Apple-style status hues. */
 :root {
-  --navy: #0B1422; --slate: #131F33; --slate-2: #1A2840; --rule: #22324B;
-  --ink: #E4EAF4; --muted: #9AABC3; --blue: #3D7EFF; --blue-ink: #8DB4FF;
-  --green: #4CC38A; --amber: #F2B65A; --red: #FF7A80;
+  --bg: #0E1116; --card: #161A21; --raised: #1E232C; --rule: rgba(255,255,255,.07);
+  --ink: #F2F4F7; --muted: #A3ACB9; --faint: #8E98A8;
+  --blue: #2563EB; --blue-hover: #1D4ED8; --blue-ink: #7FAEFF;
+  --green: #30D158; --amber: #FF9F0A; --red: #FF6961;
+  --radius: 16px; --radius-sm: 10px;
 }
-.stApp { background: var(--navy); }
+html, body, .stApp, .stMarkdown, p, label, button, input, textarea,
+[data-baseweb="select"], [data-testid="stMetric"] {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+.stApp { background: var(--bg); color: var(--ink); }
 header[data-testid="stHeader"] { background: transparent; }
 #MainMenu, footer, [data-testid="stToolbar"] { visibility: hidden; }
-.block-container { padding-top: 1.6rem; max-width: 1280px; }
-section[data-testid="stSidebar"] { background: var(--slate); border-right: 1px solid var(--rule); }
+.block-container { padding-top: 2rem; max-width: 1180px; }
 *:focus-visible { outline: 2px solid var(--blue-ink) !important; outline-offset: 2px; }
-h1, h2, h3 { letter-spacing: -0.01em; }
 .num { font-variant-numeric: tabular-nums; }
 
-.dda-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
-  flex-wrap: wrap; padding-bottom: .9rem; margin-bottom: 1.1rem; border-bottom: 1px solid var(--rule); }
-.dda-title { font-size: 1.35rem; font-weight: 650; color: var(--ink); line-height: 1.2; }
-.dda-sub { color: var(--muted); font-size: .92rem; margin-top: .15rem; }
-.dda-who { text-align: right; color: var(--muted); font-size: .85rem; line-height: 1.35; }
-.dda-who b { color: var(--ink); font-weight: 600; font-size: .95rem; }
-@media (max-width: 640px) { .dda-who { text-align: left; } .quote { text-align: left; } }
-.dda-sim { border: 1px solid rgba(242,182,90,.45); background: rgba(242,182,90,.08); color: var(--amber);
-  padding: .45rem .8rem; border-radius: 8px; font-size: .88rem; margin: -.3rem 0 1.1rem; }
+/* Headings: weight and size carry hierarchy, no ornaments. */
+h1, h2, h3 { letter-spacing: -0.02em; font-weight: 650 !important; color: var(--ink); }
+[data-testid="stHeading"] h3 { font-size: 1.3rem; padding-top: 1.4rem; }
+[data-testid="stCaptionContainer"], .stCaption { color: var(--muted) !important; }
 
-.badge { display: inline-block; padding: .08rem .5rem; border-radius: 6px; font-size: .78rem;
-  font-weight: 600; border: 1px solid currentColor; line-height: 1.5; white-space: nowrap; }
-.b-confidential, .b-rejected, .b-failed { color: var(--red); background: rgba(255,122,128,.10); }
-.b-licensed { color: var(--blue-ink); background: rgba(61,126,255,.12); }
-.b-internal, .b-revoked, .b-other { color: var(--muted); background: rgba(154,171,195,.10); }
-.b-pending, .b-vague { color: var(--amber); background: rgba(242,182,90,.10); }
-.b-approved { color: var(--green); background: rgba(76,195,138,.10); }
+/* Sidebar */
+section[data-testid="stSidebar"] { background: var(--card); border-right: 1px solid var(--rule); }
+[data-testid="stSidebarNav"] a { border-radius: var(--radius-sm); padding: .45rem .7rem; }
+[data-testid="stSidebarNav"] a span { font-size: .95rem; color: var(--ink); }
+[data-testid="stSidebarNav"] a[aria-current="page"] { background: rgba(37,99,235,.16); }
+[data-testid="stSidebarNav"] a[aria-current="page"] span { color: var(--blue-ink); font-weight: 600; }
 
-.asset { font-size: 1.15rem; font-weight: 650; color: var(--ink); }
-.fq { color: var(--muted); font-size: .82rem; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
-.desc { color: var(--ink); margin: .45rem 0 .3rem; max-width: 70ch; }
+/* Cards: bordered containers become soft rounded panels. */
+/* Unbordered wrappers carry the empty emotion class; only st.container(border=True) differs. */
+[data-testid="stVerticalBlockBorderWrapper"]:not(.st-emotion-cache-0) {
+  background: var(--card); border: 1px solid var(--rule) !important; border-radius: var(--radius) !important;
+  padding: .4rem .5rem; }
+[data-testid="stDataFrame"] > div { border-radius: 12px; overflow: hidden; border: 1px solid var(--rule); }
+
+/* Controls: 40px targets, rounded, calm until focused. */
+.stButton > button, .stFormSubmitButton > button, [data-testid="stPopover"] button {
+  min-height: 40px; border-radius: var(--radius-sm); font-weight: 600; padding: 0 1.1rem;
+  border: 1px solid var(--rule); background: var(--raised); color: var(--ink);
+  transition: background .15s ease, border-color .15s ease; }
+.stButton > button:hover, .stFormSubmitButton > button:hover, [data-testid="stPopover"] button:hover {
+  border-color: rgba(255,255,255,.16); color: var(--ink); }
+.stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primaryFormSubmit"] {
+  background: var(--blue); border-color: var(--blue); color: #FFFFFF; }
+.stButton > button[kind="primary"]:hover, .stFormSubmitButton > button[kind="primaryFormSubmit"]:hover {
+  background: var(--blue-hover); border-color: var(--blue-hover); color: #FFFFFF; }
+.stTextInput [data-baseweb="input"], .stTextArea [data-baseweb="textarea"], [data-baseweb="select"] > div {
+  background: var(--raised) !important; border-radius: var(--radius-sm) !important;
+  border: 1px solid var(--rule) !important; }
+.stTextInput [data-baseweb="input"]:focus-within, .stTextArea [data-baseweb="textarea"]:focus-within {
+  border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(37,99,235,.25); }
+[data-testid="stAlert"] { border-radius: 12px; }
+
+/* Header: wordmark left, identity chip right. */
+.dda-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  flex-wrap: wrap; padding-bottom: 1.2rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--rule); }
+.dda-title { font-size: 1.75rem; font-weight: 700; color: var(--ink); line-height: 1.15; letter-spacing: -0.03em; }
+.dda-sub { color: var(--muted); font-size: .95rem; margin-top: .25rem; }
+.dda-who { display: flex; align-items: center; gap: .65rem; background: var(--card);
+  border: 1px solid var(--rule); border-radius: 999px; padding: .35rem .9rem .35rem .35rem; }
+.dda-who .av { width: 32px; height: 32px; border-radius: 50%; background: var(--blue); color: #fff;
+  display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
+.dda-who .lab { color: var(--faint); font-size: .72rem; line-height: 1.1; }
+.dda-who b { color: var(--ink); font-weight: 600; font-size: .9rem; }
+.dda-who.out { padding: .5rem .9rem; color: var(--muted); font-size: .88rem; }
+@media (max-width: 640px) { .quote { text-align: left; } }
+.dda-sim { display: inline-block; background: rgba(255,159,10,.12); color: var(--amber);
+  padding: .3rem .8rem; border-radius: 999px; font-size: .82rem; font-weight: 600; margin: -.2rem 0 1rem; }
+
+/* Pills: tinted fill, no outline, text always present. */
+.badge { display: inline-block; padding: .14rem .6rem; border-radius: 999px; font-size: .75rem;
+  font-weight: 600; line-height: 1.45; white-space: nowrap; vertical-align: middle; }
+.b-confidential, .b-rejected, .b-failed, .b-acc-rejected, .b-acc-failed { color: var(--red); background: rgba(255,105,97,.14); }
+.b-licensed { color: var(--blue-ink); background: rgba(37,99,235,.18); }
+.b-internal, .b-revoked, .b-other, .b-unclassified, .b-acc-none, .b-acc-revoked { color: var(--muted); background: rgba(163,172,185,.12); }
+.b-pending, .b-vague, .b-acc-pending { color: var(--amber); background: rgba(255,159,10,.14); }
+.b-approved, .b-acc-approved { color: var(--green); background: rgba(48,209,88,.14); }
+
+.asset { font-size: 1.25rem; font-weight: 650; color: var(--ink); letter-spacing: -0.01em; }
+.fq { color: var(--faint); font-size: .8rem; font-family: ui-monospace, "SF Mono", Menlo, monospace; margin-top: .15rem; }
+.desc { color: var(--ink); margin: .55rem 0 .35rem; max-width: 68ch; line-height: 1.5; }
 .meta { color: var(--muted); font-size: .88rem; }
 .meta b { color: var(--ink); font-weight: 600; }
-.reason { border-left: 2px solid var(--rule); padding: .1rem 0 .1rem .75rem; margin: .55rem 0;
-  color: var(--ink); max-width: 70ch; }
+.reason { background: var(--raised); border-radius: 12px; padding: .7rem .9rem; margin: .6rem 0;
+  color: var(--ink); max-width: 72ch; line-height: 1.5; }
 
+/* The price: the one big number on each card. */
 .quote { text-align: right; }
-.quote .amt { font-size: 2.1rem; font-weight: 650; color: var(--ink); line-height: 1.05;
-  font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.quote .amt.zero { color: var(--muted); }
-.quote .per { color: var(--muted); font-size: .82rem; }
+.quote .amt { font-size: 2.4rem; font-weight: 700; color: var(--ink); line-height: 1;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.035em; }
+.quote .amt.zero { color: var(--faint); }
+.quote .per { color: var(--faint); font-size: .78rem; margin-top: .3rem; }
 
-.b-acc-approved { color: var(--green); background: rgba(76,195,138,.10); }
-.b-acc-pending { color: var(--amber); background: rgba(242,182,90,.10); }
-.b-acc-rejected, .b-acc-failed { color: var(--red); background: rgba(255,122,128,.10); }
-.b-acc-none, .b-acc-revoked { color: var(--muted); background: rgba(154,171,195,.10); }
-
-.track { display: flex; align-items: flex-start; gap: .6rem; margin: 1rem 0 .8rem; flex-wrap: wrap; }
+/* Access tracker */
+.track { display: flex; align-items: flex-start; gap: .6rem; margin: 1.2rem 0 .9rem; flex-wrap: wrap;
+  background: var(--raised); border-radius: 12px; padding: .9rem 1rem; }
 .step { display: flex; gap: .55rem; align-items: flex-start; min-width: 9.5rem; }
 .step b { display: block; color: var(--ink); font-size: .9rem; font-weight: 600; }
 .step small { display: block; color: var(--muted); font-size: .8rem; }
 .step .dot { width: 12px; height: 12px; border-radius: 50%; margin-top: .3rem; flex: none;
-  border: 2px solid var(--rule); background: var(--navy); }
+  border: 2px solid rgba(255,255,255,.18); background: transparent; }
 .step.done .dot { background: var(--green); border-color: var(--green); }
-.step.now .dot { background: var(--amber); border-color: var(--amber);
-  box-shadow: 0 0 0 4px rgba(242,182,90,.18); }
+.step.now .dot { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 0 4px rgba(255,159,10,.2); }
 .step.bad .dot { background: var(--red); border-color: var(--red); }
 .step.todo b { color: var(--muted); }
-.bar { flex: 1; min-width: 1.5rem; height: 2px; background: var(--rule); margin-top: .62rem; }
+.bar { flex: 1; min-width: 1.5rem; height: 2px; border-radius: 2px; background: rgba(255,255,255,.12); margin-top: .62rem; }
 .bar.done { background: var(--green); }
 @media (prefers-reduced-motion: no-preference) {
   .step.now .dot { animation: pulse 1.8s ease-in-out infinite; }
-  @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(242,182,90,.05); } }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(255,159,10,.06); } }
 }
-.state { border-radius: 8px; padding: .6rem .85rem; margin: .2rem 0 .6rem; font-size: .92rem;
-  color: var(--ink); border: 1px solid var(--rule); max-width: 80ch; }
-.s-pending { border-color: rgba(242,182,90,.45); background: rgba(242,182,90,.07); }
-.s-approved { border-color: rgba(76,195,138,.45); background: rgba(76,195,138,.07); }
-.s-rejected, .s-failed { border-color: rgba(255,122,128,.45); background: rgba(255,122,128,.07); }
-.s-revoked { background: rgba(154,171,195,.07); }
+.state { border-radius: 12px; padding: .7rem .95rem; margin: .2rem 0 .6rem; font-size: .92rem;
+  color: var(--ink); max-width: 80ch; line-height: 1.5; background: var(--raised); }
+.s-pending { background: rgba(255,159,10,.10); }
+.s-approved { background: rgba(48,209,88,.10); }
+.s-rejected, .s-failed { background: rgba(255,105,97,.10); }
 
-.empty { color: var(--muted); border: 1px dashed var(--rule); border-radius: 10px; padding: 1.1rem 1.2rem; }
-[data-testid="stMetricValue"] { font-variant-numeric: tabular-nums; font-weight: 650; }
-[data-testid="stMetric"] { background: var(--slate); border: 1px solid var(--rule); border-radius: 10px;
-  padding: .75rem .95rem; }
+.empty { color: var(--muted); background: var(--card); border-radius: var(--radius); padding: 1.2rem 1.3rem; }
+[data-testid="stMetric"] { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius);
+  padding: .9rem 1.1rem; }
+[data-testid="stMetricLabel"] p { color: var(--muted); font-size: .85rem; }
+[data-testid="stMetricValue"] { font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -0.03em; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -174,10 +222,10 @@ def local(s: pd.Series) -> pd.Series:
 
 
 def status_style(v: str) -> str:
-    c = {"pending": "#F2B65A", "approved": "#4CC38A", "granted": "#4CC38A", "rejected": "#FF7A80",
-         "failed": "#FF7A80", "grant failed": "#FF7A80", "confidential": "#FF7A80",
-         "licensed": "#8DB4FF"}.get(str(v).lower())
-    return f"color: {c}; font-weight: 600" if c else "color: #9AABC3"
+    c = {"pending": "#FF9F0A", "approved": "#30D158", "granted": "#30D158", "rejected": "#FF6961",
+         "failed": "#FF6961", "grant failed": "#FF6961", "confidential": "#FF6961",
+         "licensed": "#7FAEFF"}.get(str(v).lower())
+    return f"color: {c}; font-weight: 600" if c else "color: #A3ACB9"
 
 
 def when(t) -> str:
@@ -281,8 +329,9 @@ st.markdown(f"""
     <div class="dda-title">Desk Data Access</div>
     <div class="dda-sub">Market-data entitlements, owned, reasoned and recorded in Unity Catalog</div>
   </div>
-  <div class="dda-who">{'Signed in as<br><b>' + esc(ME) + '</b>' if ME else
-                        '<b>Not signed in</b><br>Requests and decisions are disabled'}</div>
+  {(f'<div class="dda-who"><span class="av" aria-hidden="true">{esc(ME[:1].upper())}</span>'
+    f'<span><span class="lab">Signed in as</span><br><b>{esc(ME)}</b></span></div>') if ME else
+   '<div class="dda-who out"><b>Not signed in</b>, requests and decisions are disabled</div>'}
 </div>
 {'<div class="dda-sim">Local simulation — no access permissions changed</div>' if SIMULATED else ''}
 """, unsafe_allow_html=True)
