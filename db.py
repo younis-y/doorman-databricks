@@ -12,13 +12,28 @@ WAREHOUSE_ID = os.environ["DATABRICKS_WAREHOUSE_ID"]
 _w = WorkspaceClient()
 
 
+def _user_token() -> str | None:
+    """The signed-in user's token, forwarded by Databricks Apps when the app has the `sql`
+    user scope. Absent locally and in tests."""
+    try:
+        import streamlit as st
+        return st.context.headers.get("X-Forwarded-Access-Token") or None
+    except Exception:  # noqa: BLE001 - no Streamlit context
+        return None
+
+
 def client() -> WorkspaceClient:
-    """The shared workspace client (used by the app for Genie)."""
+    """Runs as the signed-in user when their token is forwarded (so grants, reads and Genie
+    carry their identity and their Unity Catalog rights); otherwise as the app's service
+    principal."""
+    tok = _user_token()
+    if tok:
+        return WorkspaceClient(host=os.environ["DATABRICKS_HOST"], token=tok, auth_type="pat")
     return _w
 
 
 def run_sql(statement: str, params: dict | None = None) -> list[dict]:
-    r = _w.statement_execution.execute_statement(
+    r = client().statement_execution.execute_statement(
         warehouse_id=WAREHOUSE_ID, statement=statement, wait_timeout="50s",
         parameters=[StatementParameterListItem(name=k, value=str(v))
                     for k, v in (params or {}).items()])
