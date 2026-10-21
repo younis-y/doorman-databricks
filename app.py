@@ -557,7 +557,12 @@ def refresh() -> None:
 def friendly(e: Exception) -> str:
     # First line only, capped: SDK errors can embed the full request log, including the
     # Authorization header, and that must never be rendered.
-    msg = (str(e).strip() or e.__class__.__name__).splitlines()[0][:300]
+    lines = (str(e).strip() or e.__class__.__name__).splitlines()
+    msg = lines[0][:300]
+    # Keep the HTTP status line ("< 403 Forbidden < Invalid scope ...") if the SDK buried it below.
+    status = next((l.strip(" `") for l in lines[1:] if l.lstrip().startswith("< ")), "")
+    if status:
+        msg = f"{msg.split('. Request log')[0]}. {status[:160]}"
     return msg[0].upper() + msg[1:]
 
 
