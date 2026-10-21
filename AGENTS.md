@@ -134,9 +134,14 @@ def run_sql(statement: str, params: dict | None = None) -> list[dict]:
                     for k, v in (params or {}).items()])
     if r.status.state.value != "SUCCEEDED":
         raise RuntimeError(r.status.error.message if r.status.error else r.status.state)
+    if not (r.manifest and r.manifest.schema and r.manifest.schema.columns):
+        return []  # GRANT / UPDATE / INSERT return no result set
     cols = [c.name for c in r.manifest.schema.columns]
     return [dict(zip(cols, row)) for row in (r.result.data_array or [])]
 ```
+
+Use `wait_timeout="50s"` (the maximum): with 30s a slow statement comes back RUNNING and
+raises.
 
 Tested live on 21 Oct (SDK 0.155). **Every value comes back as a string** (`'1'`, not
 `1`): cast `licence_cost` with `float()` before summing. Values always go in as `:named` parameters. Table names cannot be parameters, so only
@@ -167,10 +172,30 @@ emoji clutter. Show the signed-in email top right.
 3. **Audit**: all rows of `access_requests`, newest first, filter by status and table.
    Headline counts: pending, approved, rejected, £/month currently granted.
 
-Optional, only after AC-001 to AC-007 pass: a "Try a query" box on page 1 that runs
-`SELECT * FROM <table> LIMIT 5` **as the user** (with `token`) and shows the
-permission error in red when denied. That is the demo's money shot; Younis may build it
-on the governance side instead, so ask first.
+**Page 3 also gets a Genie box** (after AC-001 to AC-007 pass): a text input "Ask the
+audit trail" that calls
+
+```python
+from databricks.sdk import WorkspaceClient
+w = WorkspaceClient()
+msg = w.genie.start_conversation_and_wait(os.environ["GENIE_SPACE_ID"], question)
+att = next(a for a in msg.attachments if a.query)
+res = w.genie.get_message_attachment_query_result(msg.space_id, msg.conversation_id, msg.id, att.attachment_id)
+cols = [c.name for c in res.statement_response.manifest.schema.columns]
+rows = res.statement_response.result.data_array or []
+```
+
+and renders `rows` as a dataframe, with `att.query.description` as a caption. If
+`GENIE_SPACE_ID` is unset, hide the box. Offer three preset buttons with the exact
+questions the backend tested (see `BACKEND.md` §4); free text is allowed but we only
+press the presets live.
+
+**Vague-reason badge** (page 2): `governance.submit_request` stores an `ai_classify`
+label in `note` while the request is pending (`specific business need` or `vague`).
+Show "vague reason" in amber when the note says `vague`.
+
+Do **not** build a "run a query as the user" box: the forwarded token has only `iam.*`
+scopes and cannot run SQL. The SQL editor is the denied-then-allowed money shot.
 
 ## Acceptance criteria
 
@@ -231,8 +256,13 @@ streamlit run app.py
 command: ["streamlit", "run", "app.py"]
 env:
   - name: DATABRICKS_WAREHOUSE_ID
-    valueFrom: sql-warehouse
+    value: a24300104bf8ac6c
+  - name: GENIE_SPACE_ID
+    value: <from BACKEND.md §4>
 ```
+
+(Attaching the warehouse as a resource needs MANAGE on it, which we don't have, so the
+id is a plain value and the SP gets CAN_USE from a mentor.)
 
 `requirements.txt`: `databricks-sdk` only (Streamlit is in the Apps runtime). No other
 dependencies without asking.
