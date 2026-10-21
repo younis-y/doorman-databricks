@@ -12,7 +12,6 @@ import pandas as pd
 import streamlit as st
 
 DEV_USER = os.getenv("DEV_USER")
-DEV_TOOLS = os.getenv("DEV_TOOLS") == "1"  # "Act as" switcher for local rehearsal only
 
 # Local runs with DEV_USER default to the stub so nothing touches Unity Catalog.
 # GOVERNANCE=live forces the real module, GOVERNANCE=stub forces the simulation.
@@ -97,9 +96,9 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 [data-testid="stSidebarHeader"] { height: 0 !important; min-height: 0 !important; padding: 0 !important;
   margin: 0 !important; position: relative; overflow: visible; }
 [data-testid="stSidebarCollapseButton"] { position: absolute; top: .4rem; right: .5rem; z-index: 3; }
-[data-testid="stSidebarNavItems"] { padding: 1.9rem 1rem .5rem; margin: 0; }
+[data-testid="stSidebarNavItems"] { padding: 1.9rem 1rem 1rem; margin: 0; }
 [data-testid="stSidebarNavSeparator"] { margin: 0 1rem; }
-[data-testid="stSidebarUserContent"] { padding-top: .5rem !important; }
+[data-testid="stSidebarUserContent"] { padding-top: 1rem !important; }  /* same gap as above the rule */
 [data-testid="stSidebarNav"] a { border-radius: 999px; padding: .3rem .85rem; margin: .12rem 0;
   border: 1px solid transparent; background: transparent; transition: background .15s ease, border-color .15s ease; }
 [data-testid="stSidebarNav"] a:hover { background: rgba(255,255,255,.045) !important; border-color: rgba(255,255,255,.08); }
@@ -307,6 +306,34 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 [data-testid="stMetric"] { padding: 1rem 1.15rem !important; }
 [data-testid="stMetricValue"] > div { font-size: 2rem; }
 .lt { margin-top: -.2rem !important; }
+/* Account pill in the top bar: a glass button with the user's initial; opens the switcher. */
+[data-testid="stHorizontalBlock"]:has(.appname) { align-items: center; }
+[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] { display: flex; justify-content: flex-end; }
+[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button {
+  min-height: 38px; padding: 0 .9rem 0 .3rem; font-weight: 500; font-size: .88rem; }
+[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button p {
+  display: inline-flex; align-items: center; gap: .55rem; margin: 0; }
+[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button p::before {
+  width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; flex: none;
+  background: linear-gradient(180deg, #8E8E93, #636366); color: #fff; font-size: .75rem; font-weight: 600; }
+/* Account list inside the menu: rows, not buttons, until hovered; the current user is blue glass. */
+[data-testid="stPopoverBody"] [data-testid="stVerticalBlockBorderWrapper"] {
+  background: transparent !important; border: 0 !important; box-shadow: none !important;
+  backdrop-filter: none !important; padding: 0 !important; }
+[data-testid="stPopoverBody"] .stButton > button {
+  justify-content: flex-start; min-height: 36px; border-radius: 10px; padding: 0 .75rem;
+  background: transparent; border-color: transparent; box-shadow: none; font-weight: 500; }
+[data-testid="stPopoverBody"] .stButton > button:hover {
+  background: rgba(37,99,235,.22); border-color: rgba(127,174,255,.30) !important; transform: none; box-shadow: none; }
+[data-testid="stPopoverBody"] .stButton > button[kind="primary"] {
+  background: linear-gradient(180deg, rgba(45,105,234,.34) 0%, rgba(30,85,212,.24) 100%);
+  border-color: rgba(127,174,255,.35); box-shadow: inset 0 1px 0 rgba(255,255,255,.14); font-weight: 600; }
+[data-testid="stPopoverBody"] .stButton { margin-bottom: -.6rem; }
+[data-testid="stPopoverBody"] [data-testid="stCaptionContainer"] { margin-top: .4rem; }
+.topbar-rule { border-bottom: 1px solid var(--rule); margin: .35rem 0 1.1rem; }
+[data-testid="stPopoverBody"] { border-radius: 14px !important; border: 1px solid rgba(255,255,255,.12) !important;
+  background: rgba(36,40,47,.88) !important; backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%); box-shadow: 0 12px 32px rgba(0,0,0,.45); min-width: 18rem; }
 /* Code keeps a monospace face (the one-typeface rule above would otherwise reach its tokens). */
 .stApp pre, .stApp pre *, .stApp code, .stApp code * {
   font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace !important; }
@@ -437,37 +464,69 @@ try:
 except Exception as e:  # noqa: BLE001 - shown on screen
     REQ, REQ_ERROR = pd.DataFrame(columns=REQUEST_COLS), e
 
-ME = forwarded or DEV_USER
-if DEV_TOOLS and DEV_USER and not forwarded:  # opt-in local tool, never behind Databricks Apps auth
-    people = [DEV_USER, *CATALOGUE["owner"].tolist(),
-              *(REQ["requester"].tolist() if not REQ.empty else [])]
+# Switching identity exists only off-platform (DEV_USER set, no Databricks header). Behind
+# Databricks Apps auth the forwarded email is the only identity, so nobody can act as an owner.
+LOCAL = bool(DEV_USER) and not forwarded
+if LOCAL:
+    people = [DEV_USER, *CATALOGUE["owner"].tolist(), *(REQ["requester"].tolist() if not REQ.empty else [])]
     people = list(dict.fromkeys(p for p in people if p))
-    with st.sidebar:
-        st.markdown("**Act as**")
-        pick = st.selectbox("Act as", people + ["Someone else"], key="act_as",
-                            label_visibility="collapsed",
-                            help="Local only. Switch between analyst and data owner.")
-        if pick == "Someone else":
-            ME = st.text_input("Email", key="act_as_other", placeholder="analyst@desk.com").strip() or None
-        else:
-            ME = pick
-        if SIMULATED:
-            st.caption("Simulated: no permissions are changed.")
-        st.divider()
+    ME = st.session_state.get("act_as", DEV_USER)
+    if ME not in people:
+        people.append(ME)
+else:
+    ME = forwarded
+
+
+def _act_as(who: str | None) -> None:
+    """Local only: become another user. Their requests, queue and access drive every page,
+    and the previous user's outcome messages are cleared so nothing carries over."""
+    who = (who or "").strip()
+    if who and who != st.session_state.get("act_as", DEV_USER):
+        st.session_state["act_as"] = who
+        for k in ("flash_request", "flash_decision", "genie"):
+            st.session_state.pop(k, None)
+
+
+def _act_as_other() -> None:
+    _act_as(st.session_state.get("act_as_other"))
+    st.session_state["act_as_other"] = ""
 
 with st.sidebar:
     if st.button("Refresh data", use_container_width=True):
         refresh()
         st.rerun()
 
-st.markdown(f"""
-<div class="topbar">
-  <div class="appname">Desk Data Access <span>&nbsp;Unity Catalog entitlements</span></div>
-  {(f'<div class="acct" title="Signed in"><span class="av" aria-hidden="true">{esc(ME[:1].upper())}</span>'
-    f'<span>{esc(ME)}</span></div>') if ME else
-   '<div class="acct">Not signed in. Requests and decisions are disabled.</div>'}
-</div>
-""", unsafe_allow_html=True)
+bar_l, bar_r = st.columns([3, 1.4], vertical_alignment="center")
+bar_l.markdown('<div class="appname">Desk Data Access <span>&nbsp;Unity Catalog entitlements</span></div>',
+               unsafe_allow_html=True)
+with bar_r:
+    with st.popover(ME or "Not signed in"):
+        if LOCAL:
+            owners = set(CATALOGUE["owner"])
+            for title, group in (("Data owners", [p for p in people if p in owners]),
+                                 ("Analysts", [p for p in people if p not in owners])):
+                if not group:
+                    continue
+                st.caption(title)
+                for person in group:
+                    current = person == ME
+                    st.button(f"{person}  ✓" if current else person, key=f"as::{person}",
+                              type="primary" if current else "secondary", use_container_width=True,
+                              on_click=_act_as, args=(person,))
+            st.text_input("Someone else", key="act_as_other", placeholder="name@company.com",
+                          on_change=_act_as_other, label_visibility="collapsed")
+            if SIMULATED:
+                st.caption("Simulated: no permissions are changed.")
+        elif ME:
+            st.markdown(f"Signed in through Databricks as **{ME}**.")
+            st.caption("To use the app as someone else, open it in a private window and sign in as them.")
+        else:
+            st.markdown("Not signed in. Requests and decisions are disabled.")
+initial = esc((ME or "?")[:1].upper()).replace('"', "")
+st.markdown(f"""<div class="topbar-rule"></div><style>
+[data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button p::before {{
+  content: "{initial}"; }}
+</style>""", unsafe_allow_html=True)
 
 
 def large_title(title: str, sub: str) -> None:
