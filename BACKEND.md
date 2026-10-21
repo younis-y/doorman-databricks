@@ -134,6 +134,19 @@ Run the script in `AGENTS.md` end to end with the analyst, then `reset_demo.sql`
 - `ai_classify` works on this warehouse (used to flag vague reasons).
 - Never run `apps create` again; the app exists.
 
+## How the deployed app works without the mentor (21:00)
+
+The app now has the `sql` **user scope** (`databricks apps update desk-data-access --json
+'{"user_api_scopes":["sql"]}'`). Databricks forwards the signed-in user's token and `db.py`
+runs every statement, grant and Genie call **as that user**, not as the app's service
+principal. So Younis's pages work with his own rights, and Patrick's request runs as Patrick.
+
+- First open: Databricks shows a consent screen for the `sql` scope. Accept it.
+- A requester needs USE SCHEMA on `hackathon_gold.sierra` and read/write on
+  `access_requests` (granted to `account users`), plus USE CATALOG on `hackathon_gold`,
+  which only group members have. A user without USE CATALOG sees a catalogue error.
+- The service principal is still the fallback when no token is forwarded (local runs, tests).
+
 ## Demo fallback: run the app on Younis's laptop (verified 20:45)
 
 The deployed URL cannot run SQL until a mentor grants the app's SP. Locally the app runs as

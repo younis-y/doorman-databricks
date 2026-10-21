@@ -194,8 +194,9 @@ press the presets live.
 label in `note` while the request is pending (`specific business need` or `vague`).
 Show "vague reason" in amber when the note says `vague`.
 
-Do **not** build a "run a query as the user" box: the forwarded token has only `iam.*`
-scopes and cannot run SQL. The SQL editor is the denied-then-allowed money shot.
+Update 21:00: the app now has the `sql` user scope, so `db.py` runs SQL as the signed-in
+user when a token is forwarded. Still no "run a query as the user" box: the SQL editor
+is the denied-then-allowed money shot.
 
 ## Acceptance criteria
 
