@@ -51,331 +51,290 @@ st.set_page_config(page_title="Doorman", page_icon=os.path.join(ASSETS, "emblem.
 
 st.markdown("""
 <style>
-/* Graphite surfaces, one action blue (#2563EB: 5.2:1 with white text), Apple-style status hues. */
+/* Flat graphite UI: solid surfaces, one hairline border weight, one action blue (#2563EB, 5.2:1
+   with white), status on small dots. No gradients, inset highlights, blur or press animations. */
 :root {
-  --bg: #17191E; --card: #212429; --raised: #2B2F36; --rule: rgba(255,255,255,.07);
+  --bg: #16181D; --card: #1E2126; --raised: #262A31; --hover: #2E333B;
+  --line: rgba(255,255,255,.08); --line-2: rgba(255,255,255,.14);
   --ink: #F2F4F7; --muted: #A3ACB9; --faint: #8E98A8;
-  --blue: #2563EB; --blue-hover: #1D4ED8; --blue-ink: #7FAEFF;
-  --green: #6CC28A; --amber: #E0A451; --red: #E07A74;  /* quiet: blue is the only loud colour */
-  --radius: 16px; --radius-sm: 10px;
+  --blue: #2563EB; --blue-hover: #1D4ED8; --blue-ink: #7FAEFF; --blue-soft: rgba(37,99,235,.16);
+  --green: #6CC28A; --amber: #E0A451; --red: #E07A74;
+  --radius: 12px; --radius-sm: 8px; --ctl: 40px;
 }
-/* One typeface (HIG typography: minimise typefaces): the system font, SF on Apple devices. */
 html, body, .stApp, .stApp *:not(code):not(pre):not(.material-icons):not([data-testid="stIconMaterial"]) {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue",
-               "Segoe UI", Roboto, Arial, sans-serif !important;
-  -webkit-font-smoothing: antialiased;
-}
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif !important;
+  -webkit-font-smoothing: antialiased; }
+.stApp pre, .stApp pre *, .stApp code, .stApp code * {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace !important; }
 .stApp { background: var(--bg); color: var(--ink); }
-.stCode, [data-testid="stCode"] pre { background: var(--card) !important; border-radius: 12px; }
-/* Clicked buttons keep their own colours; keyboard focus still gets the ring. */
-.stButton > button:focus:not(:focus-visible), .stFormSubmitButton > button:focus:not(:focus-visible),
-[data-testid="stPopover"] button:focus:not(:focus-visible) { color: var(--ink) !important; border-color: rgba(255,255,255,.12) !important; }
-.stButton > button[kind="primary"]:focus:not(:focus-visible),
-.stFormSubmitButton > button[kind="primaryFormSubmit"]:focus:not(:focus-visible) { color: #fff !important; border-color: #1A47B5 !important; }
-
-/* Pending: the current segment breathes so a waiting request reads as live. */
-@media (prefers-reduced-motion: no-preference) {
-  .prog.pending .prog-track i.cur { animation: waiting 1.6s ease-in-out infinite; }
-  @keyframes waiting { 50% { opacity: .45; } }
-}
 header[data-testid="stHeader"] { background: transparent; }
 #MainMenu, footer, [data-testid="stToolbar"] { visibility: hidden; }
-.block-container { padding-top: 2rem; max-width: 1180px; margin-left: auto !important; margin-right: auto !important; }
+.block-container { padding-top: 1.5rem; max-width: 1180px; margin: 0 auto !important; }
 *:focus-visible { outline: 2px solid var(--blue-ink) !important; outline-offset: 2px; }
 .num { font-variant-numeric: tabular-nums; }
+[data-stale="true"] { opacity: 1 !important; transition: none !important; }
+[data-testid="InputInstructions"] { display: none !important; }
+[data-testid="stHeaderActionElements"], [data-testid="stHeadingWithActionElements"] a[href^="#"] { display: none !important; }
+[data-testid="stElementContainer"]:has(> iframe[height="0"]), .element-container:has(> iframe[height="0"]),
+div:has(> iframe[title="streamlit_components_v1.html"][height="0"]) { display: none !important; }
 
-/* Headings: weight and size carry hierarchy, no ornaments. */
+/* Type */
 h1, h2, h3 { letter-spacing: -0.02em; font-weight: 650 !important; color: var(--ink); }
-[data-testid="stHeading"] h3 { font-size: 1.3rem; padding-top: 1.4rem; }
+[data-testid="stHeading"] h3 { font-size: 1.15rem !important; font-weight: 600 !important; padding-top: 1.4rem; }
 [data-testid="stCaptionContainer"], .stCaption { color: var(--muted) !important; }
+[data-testid="stWidgetLabel"] p { color: var(--muted); font-size: .85rem; font-weight: 500; }
+.lt { font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; color: var(--ink); line-height: 1.1; margin: 0; padding: 0 !important; }
+.lt-sub { color: var(--muted); font-size: .95rem; margin: .35rem 0 1.4rem; max-width: 70ch; line-height: 1.45; }
 
-/* Sidebar: sized to its content (Streamlit's default is 21rem). */
-section[data-testid="stSidebar"] { background: var(--card); border-right: 1px solid var(--rule);
-  }
-/* Fixed width only while open; when closed it must give its space back so content can centre. */
-section[data-testid="stSidebar"][aria-expanded="true"] {
-  width: 15rem !important; min-width: 15rem !important; max-width: 15rem !important; }
+/* Sidebar */
+section[data-testid="stSidebar"] { background: var(--card); border-right: 1px solid var(--line); }
+section[data-testid="stSidebar"][aria-expanded="true"] { width: 15rem !important; min-width: 15rem !important; max-width: 15rem !important; }
 section[data-testid="stSidebar"][aria-expanded="true"] > div { width: 15rem !important; }
 section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; min-width: 0 !important; }
-[data-testid="stSidebarUserContent"] { padding: 0 1rem 1rem; }
-[data-testid="stSidebarNav"] { padding-top: .5rem; }
-/* No header band: the collapse arrow floats in the corner, nav starts level with the top bar. */
-[data-testid="stSidebarHeader"] { height: 0 !important; min-height: 0 !important; padding: 0 !important;
-  margin: 0 !important; position: relative; overflow: visible; }
-/* Close arrow sits just outside the open sidebar's right edge, always visible. */
-[data-testid="stSidebarCollapseButton"] { position: fixed; top: .75rem; left: calc(15rem + .6rem); right: auto;
-  z-index: 1000; display: block !important; visibility: visible !important; opacity: 1 !important; }
+[data-testid="stSidebarHeader"] { height: 0 !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important;
+  position: relative; overflow: visible; }
+[data-testid="stSidebarCollapseButton"] { position: fixed; top: .75rem; left: calc(15rem + .6rem); right: auto; z-index: 1000;
+  display: block !important; visibility: visible !important; opacity: 1 !important; }
 [data-testid="stSidebarCollapseButton"] button { visibility: visible !important; opacity: 1 !important; }
 [data-testid="stSidebarCollapsedControl"] { top: .75rem !important; left: .6rem !important; }
-/* Sidebar open/close arrow: grey glass, blue edge and a press-in on hover, like the other controls. */
 [data-testid="stSidebarCollapseButton"] button, [data-testid="stSidebarCollapsedControl"] button {
-  width: 34px; height: 34px; border-radius: 11px !important; color: var(--ink) !important;
-  background: linear-gradient(180deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.04) 100%), var(--raised) !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.3);
-  backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%);
-  transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease; }
+  width: 34px; height: 34px; padding: 0 !important; display: grid !important; place-items: center;
+  border-radius: var(--radius-sm) !important; color: var(--ink) !important;
+  background: var(--raised) !important; border: 1px solid var(--line-2) !important; box-shadow: none !important; }
 [data-testid="stSidebarCollapseButton"] button:hover, [data-testid="stSidebarCollapsedControl"] button:hover {
-  border-color: rgba(127,174,255,.65) !important; transform: translateY(1px);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,.35), 0 0 0 3px rgba(37,99,235,.18); }
-[data-testid="stSidebarCollapseButton"] button:active, [data-testid="stSidebarCollapsedControl"] button:active {
-  transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0,0,0,.45); }
-
-[data-testid="stSidebarNavItems"] { padding: 1.9rem 1rem 1rem; margin: 0; }
-[data-testid="stSidebarNavSeparator"] { margin: 0 1rem; }
-/* Three pages always fit: no height cap, no "View more". */
-[data-testid="stSidebarNavItems"] { max-height: none !important; }
+  background: var(--hover) !important; }
+[data-testid="stSidebarNavItems"] { padding: 1.9rem .75rem 1rem; margin: 0; max-height: none !important; }
 [data-testid="stSidebarNavViewButton"] { display: none !important; }
-/* No anchor-link icons beside section headings. */
-[data-testid="stHeaderActionElements"], [data-testid="stHeadingWithActionElements"] a[href^="#"] { display: none !important; }
-[data-testid="stSidebarUserContent"] { padding-top: 1.75rem !important; }  /* optically matches the gap above the rule */
-[data-testid="stSidebarNav"] a { border-radius: 999px; padding: .3rem .85rem; margin: .12rem 0;
-  border: 1px solid transparent; background: transparent; transition: background .15s ease, border-color .15s ease; }
-[data-testid="stSidebarNav"] a:hover { background: rgba(255,255,255,.045) !important; border-color: rgba(255,255,255,.08); }
-[data-testid="stSidebarNav"] a:hover span { color: #FFFFFF; }
+[data-testid="stSidebarNavSeparator"] { margin: 0 1rem; }
+[data-testid="stSidebarUserContent"] { padding: 1.25rem .75rem 1rem !important; }
+[data-testid="stSidebarNav"] a { border-radius: var(--radius-sm); padding: .45rem .8rem; margin: .1rem 0;
+  min-height: 38px; display: flex; align-items: center; background: transparent; }
+[data-testid="stSidebarNav"] a span { color: var(--muted); font-weight: 500; }
+[data-testid="stSidebarNav"] a:hover { background: rgba(255,255,255,.05) !important; }
+[data-testid="stSidebarNav"] a:hover span { color: var(--ink); }
+[data-testid="stSidebarNav"] a[aria-current="page"] { background: var(--blue-soft) !important; }
+[data-testid="stSidebarNav"] a[aria-current="page"] span { color: #FFFFFF; font-weight: 600; }
 
+/* Buttons: one height, centred content, solid fills. */
+.stButton > button, .stFormSubmitButton > button, .stDownloadButton > button, [data-testid="stPopover"] button {
+  min-height: var(--ctl); padding: 0 1.1rem; border-radius: var(--radius-sm); font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  color: var(--ink); background: var(--raised); border: 1px solid var(--line-2); box-shadow: none;
+  transition: background .12s ease, border-color .12s ease, color .12s ease; }
+.stButton > button p, .stFormSubmitButton > button p, .stDownloadButton > button p, [data-testid="stPopover"] button p {
+  margin: 0; line-height: 1.2; }
+.stButton > button:hover, .stFormSubmitButton > button:hover, .stDownloadButton > button:hover, [data-testid="stPopover"] button:hover {
+  background: var(--hover); border-color: var(--line-2); color: #FFFFFF; }
+.stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primaryFormSubmit"], .stDownloadButton > button[kind="primary"] {
+  color: #FFFFFF; background: var(--blue); border-color: var(--blue); }
+.stButton > button[kind="primary"]:hover, .stFormSubmitButton > button[kind="primaryFormSubmit"]:hover, .stDownloadButton > button[kind="primary"]:hover {
+  background: var(--blue-hover); border-color: var(--blue-hover); color: #FFFFFF; }
+.stButton > button:disabled, .stFormSubmitButton > button:disabled { opacity: .45; }
+.stButton > button:focus:not(:focus-visible), .stFormSubmitButton > button:focus:not(:focus-visible),
+[data-testid="stPopover"] button:focus:not(:focus-visible) { color: inherit !important; border-color: var(--line-2) !important; box-shadow: none !important; }
+.stButton > button[kind="primary"]:focus:not(:focus-visible),
+.stFormSubmitButton > button[kind="primaryFormSubmit"]:focus:not(:focus-visible) { color: #FFFFFF !important; border-color: var(--blue) !important; }
+/* Secondary actions in the content area read as links. */
+.block-container .stButton > button[kind="secondary"] {
+  background: transparent; border-color: transparent; color: var(--blue-ink); }
+.block-container .stButton > button[kind="secondary"]:hover { background: var(--blue-soft); border-color: transparent; color: #A9C8FF; }
 
-/* Cards: bordered containers become soft rounded panels. */
-/* Unbordered wrappers carry the empty emotion class; only st.container(border=True) differs. */
-[data-testid="stVerticalBlockBorderWrapper"]:not(.st-emotion-cache-0) {
-  background: var(--card); border: 1px solid var(--rule) !important; border-radius: var(--radius) !important;
-  padding: .4rem .5rem; }
-[data-testid="stDataFrame"] > div { border-radius: 12px; overflow: hidden; border: 1px solid var(--rule); }
-
-/* Controls: pill buttons with a soft gloss (top highlight, darker base, hairline edge).
-   Hover presses in: 1px down, darker, shadow tightens. Gloss stops keep white text >= 4.8:1. */
-.stButton > button, .stFormSubmitButton > button, [data-testid="stPopover"] button {
-  min-height: 42px; border-radius: 999px; font-weight: 600; letter-spacing: -0.005em; padding: 0 1.35rem;
-  color: var(--ink);
-  background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.04) 100%), var(--raised);
-  border: 1px solid rgba(255,255,255,.12);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.35);
-  backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%);
-  transition: transform .12s ease, background .15s ease, box-shadow .15s ease, filter .15s ease; }
-.stButton > button:hover, .stFormSubmitButton > button:hover, [data-testid="stPopover"] button:hover {
-  color: #FFFFFF !important; border-color: rgba(127,174,255,.45) !important; transform: translateY(1px);
-  background: linear-gradient(180deg, rgba(45,105,234,.38) 0%, rgba(30,85,212,.30) 100%), var(--raised);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), inset 0 2px 5px rgba(5,20,70,.40), 0 1px 3px rgba(0,0,0,.3); }
-.stButton > button:active, .stFormSubmitButton > button:active, [data-testid="stPopover"] button:active {
-  transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0,0,0,.45); }
-.stButton > button[kind="primary"], .stFormSubmitButton > button[kind="primaryFormSubmit"] {
-  color: #FFFFFF; border: 1px solid #1A47B5;
-  background: linear-gradient(180deg, #2D69EA 0%, #2563EB 45%, #1E55D4 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.30), inset 0 -2px 0 rgba(10,30,90,.35),
-              0 3px 10px rgba(37,99,235,.35), 0 1px 2px rgba(0,0,0,.4); }
-.stButton > button[kind="primary"]:hover, .stFormSubmitButton > button[kind="primaryFormSubmit"]:hover {
-  color: #FFFFFF; border-color: #173F9F; transform: translateY(1px);
-  background: linear-gradient(180deg, #2459D8 0%, #1E51CC 50%, #1A47B5 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 2px 5px rgba(5,20,70,.45), 0 1px 4px rgba(37,99,235,.25); }
-.stButton > button[kind="primary"]:active, .stFormSubmitButton > button[kind="primaryFormSubmit"]:active {
-  transform: translateY(2px);
-  background: linear-gradient(180deg, #1E51CC 0%, #1A47B5 100%);
-  box-shadow: inset 0 3px 7px rgba(5,20,70,.55); }
-.stButton > button:disabled, .stFormSubmitButton > button:disabled {
-  opacity: .45; transform: none; box-shadow: none; }
-@media (prefers-reduced-motion: reduce) {
-  .stButton > button, .stFormSubmitButton > button, [data-testid="stPopover"] button { transition: none; }
-  .stButton > button:hover, .stButton > button:active, .stFormSubmitButton > button:hover,
-  .stFormSubmitButton > button:active, [data-testid="stPopover"] button:hover { transform: none; }
-}
-[data-baseweb="select"] > div {
-  border-radius: 14px !important; border: 1px solid rgba(255,255,255,.12) !important; cursor: pointer;
-  background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.035) 100%), var(--raised) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 -1px 0 rgba(0,0,0,.22), 0 2px 6px rgba(0,0,0,.25);
-  backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%);
-  transition: border-color .15s ease, box-shadow .15s ease; }
-[data-baseweb="select"] > div:hover { border-color: rgba(127,174,255,.40) !important; }
-[data-baseweb="select"] > div:focus-within { border-color: var(--blue) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 3px rgba(37,99,235,.28); }
-
-[data-baseweb="popover"] li[role="option"] { border-radius: 9px; margin: 1px 0; }
-[data-baseweb="popover"] li[role="option"]:hover, [data-baseweb="popover"] li[aria-selected="true"] {
-  background: rgba(37,99,235,.30) !important; }
-.stTextInput [data-baseweb="input"], .stTextArea [data-baseweb="textarea"] {
-  border: 1px solid transparent !important;
-  background: linear-gradient(var(--raised), var(--raised)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
-  border-radius: var(--radius-sm) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+/* Inputs and selects: same height, radius and border as buttons; text vertically centred. */
+[data-baseweb="select"] > div, .stTextInput [data-baseweb="input"], .stTextArea [data-baseweb="textarea"] {
+  background: var(--raised) !important; border: 1px solid var(--line-2) !important;
+  border-radius: var(--radius-sm) !important; box-shadow: none !important; transition: border-color .12s ease; }
+[data-baseweb="select"] > div { min-height: var(--ctl); align-items: center; cursor: pointer; }
+.stTextInput [data-baseweb="input"] { min-height: var(--ctl); }
 .stTextInput [data-baseweb="input"] > div, .stTextArea [data-baseweb="textarea"] > div,
 .stTextInput input, .stTextArea textarea { background: transparent !important; }
-.stTextInput [data-baseweb="input"]:focus-within, .stTextArea [data-baseweb="textarea"]:focus-within {
-  border-color: var(--blue) !important; }
-.stTextInput [data-baseweb="input"]:focus-within, .stTextArea [data-baseweb="textarea"]:focus-within {
-  border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(37,99,235,.25); }
-[data-testid="stAlert"] { border-radius: 14px; }
-/* Messages: glass panels with a faint tint and a status dot (marker element set by flash()). */
-.element-container:has(.flash-mark), [data-testid="stElementContainer"]:has(.flash-mark) { display: none; }
-:is(.element-container, [data-testid="stElementContainer"]):has(.flash-mark) + * [data-testid="stAlertContainer"] {
-  filter: none; border-radius: 14px !important; border: 1px solid transparent !important; color: var(--ink) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 28px rgba(0,0,0,.24) !important;
-  backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); }
-:is(.element-container, [data-testid="stElementContainer"]):has(.flash-ok) + * [data-testid="stAlertContainer"] {
-  background: linear-gradient(rgba(108,194,138,.10), rgba(108,194,138,.10)) padding-box,
-              linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important; }
-:is(.element-container, [data-testid="stElementContainer"]):has(.flash-err) + * [data-testid="stAlertContainer"] {
-  background: linear-gradient(rgba(224,122,116,.11), rgba(224,122,116,.11)) padding-box,
-              linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important; }
-:is(.element-container, [data-testid="stElementContainer"]):has(.flash-mark) + * [data-testid="stAlertContainer"] p::before {
-  content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .55rem;
-  vertical-align: middle; background: var(--green); }
-:is(.element-container, [data-testid="stElementContainer"]):has(.flash-err) + * [data-testid="stAlertContainer"] p::before {
-  background: var(--red); }
-[data-testid="stAlertContainer"] { border-radius: 14px !important; border: 0 !important; filter: saturate(.45) brightness(.92); }
+[data-baseweb="select"] > div:hover, .stTextInput [data-baseweb="input"]:hover, .stTextArea [data-baseweb="textarea"]:hover {
+  border-color: rgba(255,255,255,.22) !important; }
+[data-baseweb="select"] > div:focus-within, .stTextInput [data-baseweb="input"]:focus-within,
+.stTextArea [data-baseweb="textarea"]:focus-within { border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(37,99,235,.25) !important; }
 
-/* Loading: no dimming of the page; a small glass pill appears if a rerun takes longer than a moment. */
-[data-stale="true"] { opacity: 1 !important; transition: none !important; }
-/* Loader: a centred glass panel named after the action, shown by the helper script while a rerun
-   takes longer than a moment. No page dimming. */
-.dda-hud { position: fixed; left: 50%; top: 42%; z-index: 3000; display: flex; align-items: center; gap: .7rem;
-  padding: .85rem 1.25rem .85rem 1.05rem; border-radius: 18px; color: var(--ink); font-size: .95rem; font-weight: 600;
-  border: 1px solid transparent;
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)) padding-box,
-              linear-gradient(rgba(30,33,40,.58), rgba(30,33,40,.58)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 48px rgba(0,0,0,.45);
-  backdrop-filter: blur(26px) saturate(180%); -webkit-backdrop-filter: blur(26px) saturate(180%);
-  opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(.92);
-  transition: opacity .18s ease, transform .34s cubic-bezier(.34, 1.56, .64, 1); }
-.dda-hud.on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-.dda-hud .sp { width: 18px; height: 18px; border-radius: 50%; flex: none;
-  background: conic-gradient(from 0deg, rgba(127,174,255,0) 0deg, #7FAEFF 300deg, rgba(127,174,255,0) 360deg);
-  -webkit-mask: radial-gradient(circle, transparent 5.5px, #000 6px); mask: radial-gradient(circle, transparent 5.5px, #000 6px);
-  animation: dda-spin .8s linear infinite; }
-@keyframes dda-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .dda-hud { transition: opacity .18s ease; } .dda-hud .sp { animation-duration: 2.4s; } }
+/* Floating layers: menus, popovers, tooltips. */
+[data-baseweb="popover"]:has(ul), [data-baseweb="popover"]:has(ul) > div:not([data-testid="stPopoverBody"]) {
+  background: transparent !important; box-shadow: none !important; }
+[data-baseweb="popover"] ul, [data-testid="stSelectboxVirtualDropdown"], [data-testid="stPopoverBody"],
+[data-baseweb="tooltip"] > div, [data-testid="stTooltipContent"] {
+  background: #23262C !important; border: 1px solid var(--line-2) !important; border-radius: 10px !important;
+  color: var(--ink) !important; box-shadow: 0 10px 28px rgba(0,0,0,.45) !important; }
+[data-baseweb="popover"] ul, [data-testid="stSelectboxVirtualDropdown"] { padding: 4px !important; }
+[data-baseweb="tooltip"] { background: transparent !important; }
+[data-baseweb="popover"] li[role="option"] { border-radius: 6px; margin: 1px 0; min-height: 36px; display: flex; align-items: center; }
+[data-baseweb="popover"] li[role="option"]:hover, [data-baseweb="popover"] li[aria-selected="true"] { background: var(--blue-soft) !important; }
+[data-testid="stPopoverBody"] { min-width: 0 !important; width: max-content !important; max-width: 22rem; padding: .4rem !important; }
+[data-testid="stPopoverBody"] > div { background: transparent !important; }
+[data-testid="stPopoverBody"] .stTextInput { min-width: 14rem; }
+[data-testid="stPopoverBody"] .stButton > button[kind="secondary"] {
+  justify-content: flex-start; min-height: 36px; padding: 0 .7rem; background: transparent; border-color: transparent;
+  color: var(--ink); font-weight: 500; }
+[data-testid="stPopoverBody"] .stButton > button[kind="secondary"]:hover { background: var(--blue-soft); color: #FFFFFF; }
+[data-testid="stPopoverBody"] .stButton:has(> button[kind="secondary"]) { margin-bottom: -.6rem; }
 
-/* Ask the audit trail: preset questions as glass suggestion chips. */
-[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .genie-chips) .stButton > button {
-  min-height: 4.6rem; border-radius: 16px !important; padding: .6rem 1rem !important; text-align: left;
-  justify-content: flex-start; color: var(--ink) !important; font-weight: 500; line-height: 1.35;
-  border: 1px solid transparent !important;
-  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)) padding-box,
-              linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 6px 18px rgba(0,0,0,.22) !important; }
-[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .genie-chips) .stButton > button:hover {
-  background: linear-gradient(180deg, rgba(45,105,234,.22), rgba(30,85,212,.14)) padding-box,
-              linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
-  color: #FFFFFF !important; }
-[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .genie-chips) .stButton > button p {
-  text-align: left; }
+/* Panels: only real cards, never Streamlit's layout wrappers. */
+.group, .empty, [data-testid="stMetric"], [class*="st-key-card-"] {
+  background: var(--card) !important; border: 1px solid var(--line) !important; border-radius: var(--radius) !important;
+  box-shadow: none !important; }
+[class*="st-key-card-"] { padding: 1rem 1.1rem !important; }
+/* Streamlit draws its own border on the wrapper around a bordered container: drop it, the keyed block is the card. */
+[data-testid="stVerticalBlockBorderWrapper"]:has(> [class*="st-key-card-"]),
+[data-testid="stVerticalBlockBorderWrapper"]:has(> div > [class*="st-key-card-"]) { border: 0 !important; padding: 0 !important; background: transparent !important; }
+/* Markdown blocks carry a -1rem bottom margin; in a centred row that drops text below the buttons. */
+[data-testid="stHorizontalBlock"] [data-testid="stMarkdownContainer"]:has(.meta, .quote) { margin-bottom: 0 !important; }
+[data-testid="stDataFrame"] > div:not([data-testid="stElementToolbar"]) {
+  border: 1px solid var(--line) !important; border-radius: var(--radius) !important; overflow: hidden; }
+.stCode, [data-testid="stCode"] pre { background: var(--card) !important; border: 1px solid var(--line) !important;
+  border-radius: var(--radius-sm) !important; }
+.empty { text-align: center; padding: 1.6rem 1.3rem !important; color: var(--muted); font-size: .95rem; }
 
-/* Header: wordmark left, identity chip right. */
-.dda-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-  flex-wrap: wrap; padding-bottom: 1.2rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--rule); }
-.dda-title { font-size: 1.75rem; font-weight: 700; color: var(--ink); line-height: 1.15; letter-spacing: -0.03em; }
-.dda-sub { color: var(--muted); font-size: .95rem; margin-top: .25rem; }
-.dda-who { display: flex; align-items: center; gap: .65rem; background: var(--card);
-  border: 1px solid var(--rule); border-radius: 999px; padding: .35rem .9rem .35rem .35rem; }
-.dda-who .av { width: 32px; height: 32px; border-radius: 50%; background: var(--blue); color: #fff;
-  display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
-.dda-who .lab { color: var(--faint); font-size: .72rem; line-height: 1.1; }
-.dda-who b { color: var(--ink); font-weight: 600; font-size: .9rem; }
-.dda-who.out { padding: .5rem .9rem; color: var(--muted); font-size: .88rem; }
-@media (max-width: 640px) { .quote { text-align: left; } }
-
-/* Tags: solid rounded fills in one neutral; status rides on a small dot, text always present. */
-.badge { display: inline-flex; align-items: center; gap: .4rem; padding: .18rem .65rem; border-radius: 999px;
-  font-size: .75rem; font-weight: 600; line-height: 1.4; white-space: nowrap; vertical-align: middle;
-  background: #343841; color: var(--ink); border: 0; }
-.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--faint); flex: none; }
-.b-pending::before, .b-vague::before, .b-acc-pending::before { background: var(--amber); }
-.b-approved::before, .b-acc-approved::before { background: var(--green); }
-.b-confidential::before, .b-rejected::before, .b-failed::before, .b-acc-rejected::before, .b-acc-failed::before { background: var(--red); }
-.b-licensed::before { background: var(--blue-ink); }
-
-.asset { font-size: 1.25rem; font-weight: 650; color: var(--ink); letter-spacing: -0.01em; }
-.fq { color: var(--faint); font-size: .8rem; font-family: ui-monospace, "SF Mono", Menlo, monospace; margin-top: .15rem; }
-.desc { color: var(--ink); margin: .55rem 0 .35rem; max-width: 68ch; line-height: 1.5; }
-.meta { color: var(--muted); font-size: .88rem; }
-.meta b { color: var(--ink); font-weight: 600; }
-.reason { background: var(--raised); border-radius: 12px; padding: .7rem .9rem; margin: .6rem 0;
-  color: var(--ink); max-width: 72ch; line-height: 1.5; }
-
-/* The price: the one big number on each card. */
-.quote { text-align: right; }
-.quote .amt { font-size: 2.6rem; font-weight: 700; color: var(--ink); line-height: 1;
-  font-variant-numeric: tabular-nums; letter-spacing: -0.035em; }
-.quote .amt.zero { color: var(--faint); }
-.quote .per { color: var(--faint); font-size: .7rem; margin-top: .35rem; letter-spacing: .01em; }
-
-/* Access tracker */
-.track { display: flex; align-items: flex-start; gap: .6rem; margin: 1.2rem 0 .9rem; flex-wrap: wrap;
-  background: var(--raised); border-radius: 12px; padding: .9rem 1rem; }
-.step { display: flex; gap: .55rem; align-items: flex-start; min-width: 9.5rem; }
-.step b { display: block; color: var(--ink); font-size: .9rem; font-weight: 600; }
-.step small { display: block; color: var(--muted); font-size: .8rem; }
-.step .dot { width: 12px; height: 12px; border-radius: 50%; margin-top: .3rem; flex: none;
-  border: 2px solid rgba(255,255,255,.18); background: transparent; }
-.step.done .dot { background: var(--green); border-color: var(--green); }
-.step.now .dot { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 0 4px rgba(255,159,10,.2); }
-.step.bad .dot { background: var(--red); border-color: var(--red); }
-.step.todo b { color: var(--muted); }
-.bar { flex: 1; min-width: 1.5rem; height: 2px; border-radius: 2px; background: rgba(255,255,255,.12); margin-top: .62rem; }
-.bar.done { background: var(--green); }
-@media (prefers-reduced-motion: no-preference) {
-  .step.now .dot { animation: pulse 1.8s ease-in-out infinite; }
-  @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(255,159,10,.06); } }
-}
-.state { border-radius: 12px; padding: .7rem .95rem; margin: .2rem 0 .6rem; font-size: .92rem;
-  color: var(--ink); max-width: 80ch; line-height: 1.5; background: var(--raised); }
-.s-pending { background: rgba(255,159,10,.10); }
-.s-approved { background: rgba(48,209,88,.10); }
-.s-rejected, .s-failed { background: rgba(255,105,97,.10); }
-
-.empty { color: var(--muted); background: var(--card); border-radius: var(--radius); padding: 1.2rem 1.3rem; }
-[data-testid="stMetric"] { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius);
-  padding: .9rem 1.1rem; }
-[data-testid="stMetricLabel"] p { color: var(--muted); font-size: .85rem; }
+/* Metrics: label row and value both left, value on a fixed baseline. */
+[data-testid="stMetric"] { padding: .9rem 1.1rem !important; }
+[data-testid="stMetricLabel"] { display: flex; align-items: center; min-height: 1.2rem; }
+[data-testid="stMetricLabel"] p { color: var(--muted); font-size: .85rem; margin: 0; display: flex; align-items: center; }
 [data-testid="stMetricValue"] { font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: -0.03em; }
-
-/* Top bar and large title, macOS/iOS style. */
-.topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
-  padding-bottom: .9rem; border-bottom: 1px solid var(--rule); margin-bottom: 1.1rem; }
-.appname { font-size: .95rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em;
-  display: flex; align-items: center; gap: .6rem; }
-.appname .emblem { flex: none; width: 77px; height: 77px; }
-.appname .name { font-size: 2.15rem; font-weight: 700; letter-spacing: -0.02em; color: #FFFFFF; }
-.appname span { color: var(--faint); font-weight: 400; }
-.acct { display: flex; align-items: center; gap: .55rem; color: var(--ink); font-size: .86rem; font-weight: 500;
-  padding: .28rem .85rem .28rem .3rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.12);
-  background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.04) 100%), var(--raised);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.3); }
-.acct .av { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
-  background: linear-gradient(180deg, #8E8E93, #636366); color: #fff; font-size: .72rem; font-weight: 600; }
-.lt { font-size: 2rem; font-weight: 700; letter-spacing: -0.035em; color: var(--ink); line-height: 1.1; margin: 0; }
-.lt-sub { color: var(--muted); font-size: .95rem; margin: .35rem 0 1.4rem; max-width: 70ch; line-height: 1.45; }
-[data-testid="stHeading"] h3 { font-size: 1.15rem !important; font-weight: 600 !important; letter-spacing: -0.015em; }
-
-/* Inset grouped list (HIG lists and tables, grouped style). */
-.group { background: var(--card); border-radius: 14px; overflow: hidden; margin: .25rem 0 .9rem; }
-.g-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.2rem; padding: 1rem 1.1rem .95rem; }
-.g-title { font-size: 1.2rem; font-weight: 650; color: var(--ink); letter-spacing: -0.02em; }
-.g-desc { color: var(--muted); font-size: .92rem; margin-top: .2rem; line-height: 1.45; max-width: 62ch; }
-.g-price { text-align: right; white-space: nowrap; }
-.g-price b { display: block; font-size: 2.4rem; font-weight: 700; color: var(--ink);
-  font-variant-numeric: tabular-nums; letter-spacing: -0.03em; line-height: 1.1; }
-.g-price b.zero { color: var(--muted); }
-.g-price small { color: var(--faint); font-size: .7rem; letter-spacing: .01em; }
-.g-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-  margin-left: 1.1rem; padding: .62rem 1.1rem .62rem 0; border-top: 1px solid var(--rule); font-size: .92rem; }
-.g-row > span:first-child { color: var(--ink); }
-.g-row > span:last-child { color: var(--muted); text-align: right; overflow-wrap: anywhere; }
-.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .45rem;
-  vertical-align: middle; background: var(--faint); }
-.d-approved { background: var(--green); } .d-pending { background: var(--amber); }
-.d-rejected, .d-failed, .d-confidential { background: var(--red); }
-.d-licensed { background: var(--blue-ink); }
-/* Audit tiles: a dot in each status's colour, blue for money. Order matches the metric columns. */
+[data-testid="stMetricValue"] > div { font-size: 1.9rem; line-height: 1.15; }
 [data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div [data-testid="stMetricLabel"] p::before {
-  content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .45rem;
-  vertical-align: middle; background: var(--faint); }
+  content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .45rem; flex: none; background: var(--faint); }
 [data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div:nth-child(1) [data-testid="stMetricLabel"] p::before { background: var(--amber); }
 [data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div:nth-child(2) [data-testid="stMetricLabel"] p::before { background: var(--green); }
 [data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div:nth-child(3) [data-testid="stMetricLabel"] p::before,
 [data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div:nth-child(4) [data-testid="stMetricLabel"] p::before { background: var(--red); }
 [data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div:nth-child(6) [data-testid="stMetricLabel"] p::before { background: var(--blue-ink); }
+
+/* Messages: a flat tinted bar with a status dot (marker element set by flash()). */
+[data-testid="stAlertContainer"] { border-radius: var(--radius-sm) !important; border: 0 !important; }
+[data-testid="stAlertContainer"] a { color: inherit !important; text-decoration: none !important; font-weight: 600; }
+.element-container:has(.flash-mark), [data-testid="stElementContainer"]:has(.flash-mark) { display: none; }
+:is(.element-container, [data-testid="stElementContainer"]):has(.flash-mark) + * [data-testid="stAlertContainer"] {
+  color: var(--ink) !important; border: 1px solid var(--line) !important; background: var(--card) !important; }
+:is(.element-container, [data-testid="stElementContainer"]):has(.flash-ok) + * [data-testid="stAlertContainer"] { background: rgba(108,194,138,.10) !important; }
+:is(.element-container, [data-testid="stElementContainer"]):has(.flash-err) + * [data-testid="stAlertContainer"] { background: rgba(224,122,116,.11) !important; }
+:is(.element-container, [data-testid="stElementContainer"]):has(.flash-mark) + * [data-testid="stAlertContainer"] p::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .55rem; vertical-align: middle; background: var(--green); }
+:is(.element-container, [data-testid="stElementContainer"]):has(.flash-err) + * [data-testid="stAlertContainer"] p::before { background: var(--red); }
+
+/* Loader shown by the helper script while a rerun takes longer than a moment. */
+.dda-hud { position: fixed; left: 50%; top: 42%; z-index: 3000; display: flex; align-items: center; gap: .7rem;
+  padding: .75rem 1.1rem; border-radius: 10px; color: var(--ink); font-size: .92rem; font-weight: 600;
+  background: #23262C; border: 1px solid var(--line-2); box-shadow: 0 10px 28px rgba(0,0,0,.45);
+  opacity: 0; pointer-events: none; transform: translate(-50%, -50%); transition: opacity .15s ease; }
+.dda-hud.on { opacity: 1; }
+.dda-hud .sp { width: 16px; height: 16px; border-radius: 50%; flex: none; border: 2px solid var(--line-2);
+  border-top-color: var(--blue-ink); animation: dda-spin .8s linear infinite; }
+@keyframes dda-spin { to { transform: rotate(360deg); } }
+
+/* Genie preset questions: flat tiles, text left. */
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .genie-chips) .stButton > button {
+  min-height: 4.2rem; padding: .6rem .9rem !important; justify-content: flex-start; text-align: left; font-weight: 500;
+  line-height: 1.35; color: var(--ink) !important; background: var(--card) !important; border: 1px solid var(--line) !important; }
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .genie-chips) .stButton > button:hover {
+  background: var(--raised) !important; border-color: var(--line-2) !important; }
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .genie-chips) .stButton > button p { text-align: left; }
+
+/* Top bar: wordmark left, bell and account pill right, all on one centre line. */
+[data-testid="stHorizontalBlock"]:has(.appname) { align-items: center !important; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div { display: flex; align-items: center; min-height: 44px; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div > div { width: 100%; }
+/* Bell and account pill hug their content and sit together at the right edge; the wordmark takes the rest. */
+[data-testid="stHorizontalBlock"]:has(.appname) { gap: .6rem !important; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:first-child { flex: 1 1 auto !important; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(n+2) { flex: 0 0 auto !important; width: auto !important; min-width: 0 !important; }
+.appname { display: flex; align-items: center; gap: .7rem; margin: 0; }
+[data-testid="stMarkdownContainer"]:has(> .appname), [data-testid="stMarkdownContainer"]:has(> div > .appname) { margin: 0 !important; }
+.appname .emblem { flex: none; width: 44px; height: 44px; }
+.appname .name { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em; color: #FFFFFF; line-height: 1; }
+.topbar-rule { border-bottom: 1px solid var(--line); margin: .5rem 0 1.4rem; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(n+2) [data-testid="stPopover"] { display: flex; justify-content: flex-end; }
+/* Account pill: avatar initial centred in its circle, email beside it. */
+[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button {
+  min-height: 40px; padding: 0 .75rem 0 .35rem; border-radius: 999px; font-weight: 500; font-size: .88rem;
+  background: var(--raised) !important; border: 1px solid var(--line-2) !important; color: var(--ink) !important; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button:hover { background: var(--hover) !important; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button p {
+  display: inline-flex; align-items: center; gap: .55rem; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button p::before {
+  width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none;
+  background: #4B5260; color: #FFFFFF; font-size: .75rem; font-weight: 600; line-height: 1; }
+/* Bell: a 40px circle, the icon drawn with a mask at the exact centre. */
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button {
+  position: relative; width: 40px; height: 40px; min-height: 40px; padding: 0 !important; border-radius: 50% !important;
+  background: var(--raised) !important; border: 1px solid var(--line-2) !important; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button:hover { background: var(--hover) !important; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button p,
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button svg,
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button [data-testid="stMarkdownContainer"] + div { display: none !important; }
+[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; transform: translate(-50%, -50%); background: #F2F4F7;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/><path d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/><path d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/></svg>") center / contain no-repeat; }
+[data-testid="stPopoverBody"]:has(.notif-panel) { width: 18.25rem !important; min-width: 18.25rem !important; max-width: 18.25rem !important; }
+.notif-panel { padding: .15rem .1rem 1rem; }
+.notif-panel .nh { display: flex; justify-content: space-between; align-items: center; padding: .1rem .5rem .55rem;
+  margin-bottom: .35rem; border-bottom: 1px solid var(--line); }
+.notif-panel .nh b { font-size: .88rem; font-weight: 600; color: var(--ink); }
+.notif-panel .nh span { color: #FFFFFF; background: var(--blue); font-size: .7rem; font-weight: 600; line-height: 1;
+  padding: .22rem .45rem; border-radius: 999px; }
+.notif { display: flex; gap: .6rem; align-items: flex-start; padding: .55rem .6rem; border-radius: 8px; }
+.notif + .notif { margin-top: .15rem; }
+.notif.unread { background: rgba(255,255,255,.045); }
+.notif .dot { margin-top: .42rem; flex: none; }
+.notif div { color: var(--ink); font-size: .88rem; line-height: 1.4; }
+.notif small { display: block; color: var(--muted); font-size: .78rem; margin-top: .1rem; }
+.notif-empty { color: var(--muted); font-size: .85rem; text-align: center; padding: .5rem .5rem 0; }
+
+/* Tags: neutral pill, status on a dot, text always present. */
+.badge { display: inline-flex; align-items: center; gap: .4rem; padding: .16rem .6rem; border-radius: 999px;
+  font-size: .75rem; font-weight: 600; line-height: 1.4; white-space: nowrap; vertical-align: middle;
+  background: var(--raised); color: var(--ink); border: 1px solid var(--line); }
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--faint); flex: none; }
+.b-pending::before, .b-vague::before, .b-acc-pending::before { background: var(--amber); }
+.b-approved::before, .b-acc-approved::before { background: var(--green); }
+.b-confidential::before, .b-rejected::before, .b-failed::before, .b-acc-rejected::before, .b-acc-failed::before { background: var(--red); }
+.b-licensed::before { background: var(--blue-ink); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .45rem; vertical-align: middle; background: var(--faint); }
+.d-approved { background: var(--green); } .d-pending { background: var(--amber); }
+.d-rejected, .d-failed, .d-confidential { background: var(--red); }
+.d-licensed { background: var(--blue-ink); }
+
+/* Ticket and card content */
+.asset { font-size: 1.2rem; font-weight: 650; color: var(--ink); letter-spacing: -0.01em; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.fq { color: var(--faint); font-size: .8rem; font-family: ui-monospace, "SF Mono", Menlo, monospace; margin-top: .15rem; }
+.desc { color: var(--ink); margin: .55rem 0 .35rem; max-width: 68ch; line-height: 1.5; }
+.meta { color: var(--muted); font-size: .88rem; }
+.meta b { color: var(--ink); font-weight: 600; }
+.reason { background: var(--raised); border-radius: var(--radius-sm); padding: .65rem .85rem; margin: .6rem 0; color: var(--ink); max-width: 72ch; line-height: 1.5; }
+.quote { text-align: right; }
+.quote .amt { font-size: 2.3rem; font-weight: 700; color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.quote .amt.zero { color: var(--faint); }
+.quote .per { color: var(--faint); font-size: .72rem; margin-top: .35rem; }
+@media (max-width: 640px) { .quote { text-align: left; } }
+/* Approve is the primary action on a ticket; Reject is a plain secondary button beside it. */
+[class*="st-key-card-ticket"] [data-testid="stPopover"] button { color: #FFFFFF !important; background: var(--blue) !important; border-color: var(--blue) !important; }
+[class*="st-key-card-ticket"] [data-testid="stPopover"] button:hover { background: var(--blue-hover) !important; }
+[class*="st-key-card-ticket"] .stButton > button[kind="secondary"] { color: var(--ink); background: var(--raised); border-color: var(--line-2); }
+[class*="st-key-card-ticket"] .stButton > button[kind="secondary"]:hover { background: var(--hover); color: #FFFFFF; }
+.state { border-radius: var(--radius-sm); padding: .7rem .95rem; margin: .2rem 0 .6rem; font-size: .92rem; color: var(--ink); max-width: 80ch; line-height: 1.5; background: var(--raised); }
+.s-pending { background: rgba(224,164,81,.10); } .s-approved { background: rgba(108,194,138,.10); }
+.s-rejected, .s-failed { background: rgba(224,122,116,.10); }
+
+/* Grouped list (catalogue detail, my requests) */
+.group { overflow: hidden; margin: .25rem 0 .9rem; }
+.g-head { display: flex; justify-content: space-between; align-items: center; gap: 1.2rem; padding: 1rem 1.1rem; }
+.g-title { font-size: 1.15rem; font-weight: 650; color: var(--ink); letter-spacing: -0.02em; }
+.g-desc { color: var(--muted); font-size: .92rem; margin-top: .2rem; line-height: 1.45; max-width: 62ch; }
+.g-price { text-align: right; white-space: nowrap; }
+.g-price b { display: block; font-size: 2.2rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; line-height: 1.1; }
+.g-price b.zero { color: var(--muted); }
+.g-price small { color: var(--faint); font-size: .72rem; }
+.g-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-left: 1.1rem;
+  padding: .62rem 1.1rem .62rem 0; border-top: 1px solid var(--line); font-size: .92rem; min-height: 2.6rem; }
+.g-row > span:first-child { color: var(--ink); }
+.g-row > span:last-child { color: var(--muted); text-align: right; overflow-wrap: anywhere; display: inline-flex; align-items: center; }
 .g-foot { color: var(--faint); font-size: .8rem; margin: -.5rem 0 1rem 1.1rem; }
 
-/* Determinate progress (HIG progress indicators): one track, three segments. */
-.prog { padding: .95rem 1.1rem 1rem; border-top: 1px solid var(--rule); }
+/* Progress: one track, three segments. */
+.prog { padding: .95rem 1.1rem 1rem; border-top: 1px solid var(--line); }
 .prog-track { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .prog-track i { height: 6px; border-radius: 3px; background: rgba(255,255,255,.10); }
 .prog-track i.on { background: var(--green); }
@@ -388,164 +347,17 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 .prog-steps span:nth-child(2) { text-align: center; } .prog-steps span:nth-child(3) { text-align: right; }
 .prog-note { margin-top: .7rem; font-size: .9rem; color: var(--ink); line-height: 1.45; }
 .prog-note em { font-style: normal; color: var(--muted); }
-/* Liquid glass panels: one material for every surface that holds content. */
-.group, .empty, [data-testid="stMetric"],
-[data-testid="stVerticalBlockBorderWrapper"]:not(.st-emotion-cache-0) {
-  /* Liquid-glass edge: a light rim brighter at the top-left, fading, with a hint of blue; solid fill inside. */
-  border: 1px solid transparent !important;
-  background: linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 10px 28px rgba(0,0,0,.24) !important; }
-[data-testid="stDataFrame"] > div:not([data-testid="stElementToolbar"]) { border: 1px solid transparent !important; border-radius: 14px !important;
-  background: linear-gradient(var(--bg), var(--bg)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
-  box-shadow: 0 10px 28px rgba(0,0,0,.22); }
-.stCode, [data-testid="stCode"] pre { border: 1px solid transparent !important;
-  background: linear-gradient(#25282E, #25282E) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important; }
-.stCode, [data-testid="stCode"] pre {
-  border: 1px solid rgba(255,255,255,.09); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
-/* Empty states: centred and quiet, an invitation rather than a box of text. */
-.empty { text-align: center; padding: 1.6rem 1.3rem !important; color: var(--muted); font-size: .95rem; }
-[data-testid="stMetric"] { padding: 1rem 1.15rem !important; }
-[data-testid="stMetricValue"] > div { font-size: 2rem; }
-.lt { margin-top: -.2rem !important; }
-/* Plain-text secondary actions in the content area; the sidebar and account pill keep their glass. */
-.block-container .stButton > button[kind="secondary"], .block-container [data-testid="stPopover"] button {
-  background: transparent !important; border-color: transparent !important; box-shadow: none !important;
-  backdrop-filter: none !important; color: var(--blue-ink) !important; font-weight: 600; }
-.block-container .stButton > button[kind="secondary"]:hover, .block-container [data-testid="stPopover"] button:hover {
-  background: rgba(127,174,255,.10) !important; color: #A9C8FF !important; transform: translateY(1px); }
-/* Reject on the ticket: a grey glass button with the glass rim; blue glass on hover like the rest. */
-[data-testid="stVerticalBlockBorderWrapper"]:has(.quote) .stButton > button[kind="secondary"] {
-  color: var(--ink) !important; border: 1px solid transparent !important;
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)) padding-box,
-              linear-gradient(var(--raised), var(--raised)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 2px 6px rgba(0,0,0,.3) !important; }
-[data-testid="stVerticalBlockBorderWrapper"]:has(.quote) .stButton > button[kind="secondary"]:hover {
-  color: #FFFFFF !important;
-  background: linear-gradient(180deg, rgba(45,105,234,.38), rgba(30,85,212,.30)) padding-box,
-              linear-gradient(var(--raised), var(--raised)) padding-box, linear-gradient(155deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 32%, rgba(255,255,255,.03) 62%, rgba(127,174,255,.20) 100%) border-box !important; }
-/* Approve opens a confirm step but is still the primary action on the ticket. */
-[data-testid="stVerticalBlockBorderWrapper"]:has(.quote) [data-testid="stPopover"] button {
-  color: #FFFFFF !important; border: 1px solid #1A47B5 !important;
-  background: linear-gradient(180deg, #2D69EA 0%, #2563EB 45%, #1E55D4 100%) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.30), inset 0 -2px 0 rgba(10,30,90,.35), 0 3px 10px rgba(37,99,235,.35) !important; }
-[data-testid="stVerticalBlockBorderWrapper"]:has(.quote) [data-testid="stPopover"] button:hover {
-  background: linear-gradient(180deg, #2459D8 0%, #1E51CC 50%, #1A47B5 100%) !important; color: #FFFFFF !important;
-  box-shadow: inset 0 2px 5px rgba(5,20,70,.45) !important; }
-/* Account pill in the top bar: a glass button with the user's initial; opens the switcher. */
-[data-testid="stHorizontalBlock"]:has(.appname) { align-items: center; }
-[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] { display: flex; justify-content: flex-end; }
-[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button {
-  min-height: 38px; padding: 0 .9rem 0 .3rem; font-weight: 500; font-size: .88rem; color: var(--ink) !important;
-  background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.04) 100%), var(--raised) !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.3) !important; }
-[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button p {
-  display: inline-flex; align-items: center; gap: .55rem; margin: 0; }
-[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button p::before {
-  width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; flex: none;
-  background: linear-gradient(180deg, #8E8E93, #636366); color: #fff; font-size: .75rem; font-weight: 600; }
-[data-testid="stHorizontalBlock"]:has(.appname) > div:last-child [data-testid="stPopover"] button:hover {
-  color: #FFFFFF !important; border-color: rgba(127,174,255,.45) !important;
-  background: linear-gradient(180deg, rgba(45,105,234,.38) 0%, rgba(30,85,212,.30) 100%), var(--raised) !important; }
-/* Notification bell: a round glass button, bell drawn with a mask, blue glass badge with the count. */
-[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] { display: flex; justify-content: flex-end; }
-[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button {
-  position: relative; width: 40px; height: 40px; min-height: 40px; padding: 0 !important; border-radius: 50% !important;
-  color: var(--ink) !important; border: 1px solid rgba(255,255,255,.12) !important;
-  background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.04) 100%), var(--raised) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.3) !important; }
-[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button:hover {
-  border-color: rgba(127,174,255,.45) !important;
-  background: linear-gradient(180deg, rgba(45,105,234,.38) 0%, rgba(30,85,212,.30) 100%), var(--raised) !important; }
-[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button p { font-size: 0 !important; margin: 0; }
-[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button svg { display: none; }
-[data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button::before {
-  content: ""; position: absolute; inset: 0; margin: auto; width: 19px; height: 19px; background: #F2F4F7;
-  -webkit-mask: url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/><path d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/></svg>\") center / contain no-repeat; mask: url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/><path d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/></svg>\") center / contain no-repeat; }
-/* The notifications panel: same glass as the account menu, a touch more see-through. */
-[data-testid="stPopoverBody"]:has(.notif-panel) {
-  background: linear-gradient(180deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.02) 100%), rgba(30,33,40,.36) !important;
-  min-width: 21rem !important; max-width: 24rem !important; }
-.notif-panel { padding-bottom: .35rem; }
-.notif-panel .nh { display: flex; justify-content: space-between; align-items: baseline; margin: .1rem .2rem .5rem; }
-.notif-panel .nh b { font-size: .95rem; color: var(--ink); }
-.notif-panel .nh span { color: var(--faint); font-size: .78rem; }
-.notif { display: flex; gap: .6rem; align-items: flex-start; padding: .55rem .6rem; border-radius: 12px; }
-.notif + .notif { margin-top: .15rem; }
-.notif.unread { background: rgba(255,255,255,.045); }
-.notif .dot { margin-top: .42rem; flex: none; }
-.notif div { color: var(--ink); font-size: .88rem; line-height: 1.4; }
-.notif small { display: block; color: var(--muted); font-size: .78rem; margin-top: .1rem; }
-.notif-empty { color: var(--muted); font-size: .88rem; padding: .4rem .3rem .2rem; }
-/* Account list inside the menu: rows, not buttons, until hovered; the current user is blue glass. */
-[data-testid="stPopoverBody"] > div { background: transparent !important; }
-[data-testid="stPopoverBody"] [data-testid="stVerticalBlockBorderWrapper"] {
-  background: transparent !important; border: 0 !important; box-shadow: none !important;
-  backdrop-filter: none !important; padding: 0 !important; }
-[data-testid="stPopoverBody"] .stButton > button[kind="secondary"] {
-  justify-content: flex-start; min-height: 36px; border-radius: 10px; padding: 0 .75rem;
-  background: transparent; border-color: transparent; box-shadow: none; font-weight: 500; }
-[data-testid="stPopoverBody"] .stButton > button[kind="secondary"]:focus:not(:focus-visible) { border-color: transparent !important; }
-[data-testid="stPopoverBody"] .stButton > button[kind="secondary"]:hover {
-  background: rgba(37,99,235,.22); border-color: rgba(127,174,255,.30) !important; transform: none; box-shadow: none; }
-
-[data-testid="stPopoverBody"] .stButton:has(> button[kind="secondary"]) { margin-bottom: -.6rem; }
-.topbar-rule { border-bottom: 1px solid var(--rule); margin: .35rem 0 1.1rem; }
-/* Same glass for dropdown menus and tooltips: floating layers over content. */
-[data-baseweb="popover"] ul[role="listbox"], [data-baseweb="popover"] [data-baseweb="menu"],
-[data-baseweb="tooltip"] > div, [data-testid="stTooltipContent"] {
-  background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.52) !important;
-  border: 1px solid rgba(255,255,255,.14) !important; border-radius: 14px !important; color: var(--ink) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 16px 40px rgba(0,0,0,.45) !important;
-  backdrop-filter: blur(28px) saturate(180%) !important; -webkit-backdrop-filter: blur(28px) saturate(180%) !important; }
-[data-baseweb="tooltip"] { background: transparent !important; }
-/* Spring press, SwiftUI-style: controls shrink while held and spring back with a slight overshoot. */
-.stButton > button, .stFormSubmitButton > button, [data-testid="stPopover"] button,
-[data-testid="stSidebarNav"] a, [data-testid="stElementToolbar"] button,
-[data-testid="stSidebarCollapseButton"] button, [data-testid="stSidebarCollapsedControl"] button {
-  transition: transform .34s cubic-bezier(.34, 1.56, .64, 1), background .15s ease, box-shadow .15s ease,
-              border-color .15s ease, color .15s ease !important; }
-.stButton > button:active, .stFormSubmitButton > button:active, [data-testid="stPopover"] button:active,
-[data-testid="stSidebarNav"] a:active {
-  transform: translateY(1px) scale(.96) !important; transition-duration: .08s !important; }
-/* Table toolbar (download, search, full screen): a small glass pill with springy icons. */
-[data-testid="stElementToolbar"] { border: 0 !important; background: transparent !important; box-shadow: none !important; }
-[data-testid="stElementToolbar"] > div {
-  background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.6);
-  border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 2px 3px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 6px 18px rgba(0,0,0,.35);
-  backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%); }
-[data-testid="stElementToolbar"] button { border-radius: 999px !important; background: transparent !important;
-  color: var(--muted) !important; width: 30px; height: 30px; }
-[data-testid="stElementToolbar"] button:hover { background: rgba(37,99,235,.24) !important; color: #FFFFFF !important; }
-[data-testid="stElementToolbar"] button:active { transform: scale(.84) !important; transition-duration: .07s !important; }
-@media (prefers-reduced-motion: reduce) {
-  .stButton > button, .stFormSubmitButton > button, [data-testid="stPopover"] button, [data-testid="stSidebarNav"] a,
-  [data-testid="stElementToolbar"] button { transition: background .15s ease, color .15s ease !important; transform: none !important; }
+@media (prefers-reduced-motion: no-preference) {
+  .prog.pending .prog-track i.cur { animation: waiting 1.6s ease-in-out infinite; }
+  @keyframes waiting { 50% { opacity: .45; } }
 }
-/* Select / multiselect menus: their wrappers paint solid; clear them and put the glass on the list. */
-[data-baseweb="popover"]:has(ul), [data-baseweb="popover"]:has(ul) > div:not([data-testid="stPopoverBody"]) {
-  background: transparent !important; box-shadow: none !important; }
-[data-baseweb="popover"] ul, [data-testid="stSelectboxVirtualDropdown"] {
-  background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.55) !important;
-  border: 1px solid rgba(255,255,255,.14) !important; border-radius: 14px !important; padding: 4px !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 16px 40px rgba(0,0,0,.45) !important;
-  backdrop-filter: blur(28px) saturate(180%) !important; -webkit-backdrop-filter: blur(28px) saturate(180%) !important; }
-[data-testid="stPopoverBody"] { border-radius: 16px !important; border: 1px solid rgba(255,255,255,.14) !important;
-  background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.52) !important;
-  backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 16px 40px rgba(0,0,0,.45);
-  min-width: 0 !important; width: max-content !important; max-width: 22rem; padding: .45rem !important; }
-/* The account menu hugs its longest email. */
-[data-testid="stPopoverBody"] .stTextInput { min-width: 14rem; }
-/* "Press Enter to apply" hints: Enter still works, the hint is noise. */
-[data-testid="InputInstructions"] { display: none !important; }
-/* The hover helper below is an invisible component; take it out of the layout. */
-[data-testid="stElementContainer"]:has(> iframe[height="0"]), .element-container:has(> iframe[height="0"]),
-div:has(> iframe[title="streamlit_components_v1.html"][height="0"]) { display: none !important; }
-/* Code keeps a monospace face (the one-typeface rule above would otherwise reach its tokens). */
-.stApp pre, .stApp pre *, .stApp code, .stApp code * {
-  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace !important; }
+
+/* Table toolbar: a small flat pill. */
+[data-testid="stElementToolbar"] { border: 0 !important; background: transparent !important; box-shadow: none !important; }
+[data-testid="stElementToolbar"] > div { background: #23262C; border: 1px solid var(--line-2); border-radius: 999px; padding: 2px 3px; }
+[data-testid="stElementToolbar"] button { border-radius: 999px !important; background: transparent !important; color: var(--muted) !important;
+  width: 30px; height: 30px; display: grid; place-items: center; }
+[data-testid="stElementToolbar"] button:hover { background: var(--blue-soft) !important; color: #FFFFFF !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -600,17 +412,19 @@ def status_style(v: str) -> str:
 
 
 def when(t) -> str:
-    return "" if t is None or pd.isna(t) else t.strftime("%d %b %Y, %H:%M:%S")
+    # A space, not "": Streamlit shows the raw value ("None") when a formatted cell is empty.
+    return " " if t is None or pd.isna(t) else t.strftime("%d %b %Y, %H:%M:%S")
 
 
 def styled(df: pd.DataFrame, cols: list[str]):
     """Colour status-like columns. A Styler's display values override column_config formats,
     so money and times are formatted here too."""
+    # Dates go in as text: the grid shows an empty date as "None" whatever the Styler says.
+    df = df.assign(**{c: df[c].map(when) for c in df.columns if pd.api.types.is_datetime64_any_dtype(df[c])})
     s = df.style
     fn = getattr(s, "map", None) or s.applymap
     fmt = {c: money for c in df.columns if c.startswith("£")}
-    fmt |= {c: when for c in df.columns if pd.api.types.is_datetime64_any_dtype(df[c])}
-    return fn(status_style, subset=cols).format(na_rep="").format(fmt, na_rep="")
+    return fn(status_style, subset=cols).format(na_rep=" ").format(fmt, na_rep=" ")
 
 
 # --------------------------------------------------------------------------- data
@@ -746,7 +560,7 @@ bar_l, bar_bell, bar_r = st.columns([3, .32, 1.4], vertical_alignment="center")
 with bar_bell:
     with st.popover(f"Notifications, {UNREAD} unread" if UNREAD else "Notifications"):
         st.markdown(
-            f'<div class="notif-panel"><div class="nh"><b>Notifications</b><span>{UNREAD} new</span></div>'
+            f'<div class="notif-panel"><div class="nh"><b>Notifications</b>{f"<span>{UNREAD} new</span>" if UNREAD else ""}</div>'
             + ("".join(f'<div class="notif{" unread" if n["unread"] else ""}"><span class="dot d-{esc(n["dot"])}"></span>'
                        f'<div>{n["text"]}<small>{n["small"]}</small></div></div>' for n in NOTES)
                or '<div class="notif-empty">You\'re all caught up.</div>')
@@ -782,8 +596,7 @@ BADGE = "" if not UNREAD else f"""
 [data-testid="stHorizontalBlock"]:has(.appname) > div:nth-child(2) [data-testid="stPopover"] button::after {{
   content: "{min(UNREAD, 99)}"; position: absolute; top: -5px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px;
   border-radius: 999px; display: grid; place-items: center; font-size: .68rem; font-weight: 700; color: #FFFFFF;
-  background: linear-gradient(180deg, #3A76F0 0%, #1D4FCB 100%); border: 1px solid rgba(255,255,255,.35);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 2px 8px rgba(37,99,235,.45); }}"""
+  background: #2563EB; border: 2px solid #16181D; line-height: 1; }}"""
 # Open the account menu on hover (Streamlit popovers are click-only). Same-origin component, so it
 # can reach the app document; it only clicks the pill's own button, and clicking still works.
 components.html("""<script>
@@ -1041,7 +854,7 @@ def product_card(a) -> None:
 
 
 def catalogue_page() -> None:
-    large_title("Catalogue", "Every tagged table in Unity Catalog.")
+    large_title("Catalogue", "Every data product with an owner. Pick one below to request access.")
     if CATALOGUE_ERROR is not None:
         st.error(f"Couldn't read the catalogue tags: {friendly(CATALOGUE_ERROR)}. "
                  "Check the SQL warehouse is running, then choose Refresh data.")
@@ -1164,7 +977,7 @@ def active_grants() -> None:
                 f'<b class="num">{esc(money(live["licence_cost"].sum()))}</b> / month</div>', unsafe_allow_html=True)
     for r in live.itertuples():
         asset = short(r.table_name)
-        with st.container(border=True):
+        with st.container(border=True, key=f"card-live-{r.id}"):
             c1, c2, c3 = st.columns([3.2, 1, 1.1], vertical_alignment="center")
             c1.markdown(f'<div class="meta"><b>{esc(r.requester)}</b> reads <b>{esc(asset)}</b>, granted '
                         f'{esc(ago(r.decided_at))}</div>', unsafe_allow_html=True)
@@ -1185,7 +998,7 @@ def pending_queue(queue: pd.DataFrame) -> None:
                 unsafe_allow_html=True)
     for r in queue.itertuples():
         asset = short(r.table_name)
-        with st.container(border=True):
+        with st.container(border=True, key=f"card-ticket-{r.id}"):
             left, right = st.columns([4, 1.3])
             vague = badge("Vague reason", "vague") if str(r.note).strip().lower() == "vague" else ""
             with left:
@@ -1333,9 +1146,7 @@ pg = st.navigation([
 here = f'[data-testid="stSidebarNav"] a[href$="/{pg.url_path}"]'
 st.markdown(f"""<style>
 {here}, {here}:hover {{
-  background: linear-gradient(180deg, rgba(45,105,234,.34) 0%, rgba(30,85,212,.24) 100%) !important;
-  border-color: rgba(127,174,255,.35) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 2px 8px rgba(37,99,235,.18); }}
+  background: rgba(37,99,235,.16) !important; }}
 {here} span {{ color: #FFFFFF !important; font-weight: 600; }}
 </style>""", unsafe_allow_html=True)
 pg.run()

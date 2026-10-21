@@ -49,10 +49,20 @@ rights in the app are exactly their rights in Unity Catalog.
 
 ## Run it
 
-Deployed: `desk-data-access` in the hackathon workspace. On first open, accept the consent
-screen for the `sql` scope.
+**On this machine, no Databricks** (the hackathon workspace was shut down on 22 Oct 2026):
 
-Locally (runs as you, grants are real):
+```bash
+pip install streamlit pandas
+./run-local.sh            # http://localhost:8501
+```
+
+Data comes from a SQLite file built on first run from `local/*.csv` (same six products and
+tags as `sql/`). Approvals are simulated and live in the browser session, so a refresh clears
+them. The Genie box is hidden.
+
+Deployed (historical): `desk-data-access` in the hackathon workspace, now gone.
+
+Against a Databricks workspace (runs as you, grants are real):
 
 ```bash
 pip install streamlit "databricks-sdk>=0.60" pandas
