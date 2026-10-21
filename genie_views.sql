@@ -21,14 +21,11 @@ FROM hackathon_gold.sierra.access_requests;
 CREATE OR REPLACE VIEW hackathon_gold.sierra.v_entitlements
   (user_email COMMENT 'Person who currently has access',
    table_name COMMENT 'Fully qualified table they can read',
-   sensitivity COMMENT 'licensed, confidential or internal',
    licence_cost_gbp_per_month COMMENT 'What this access costs the desk per month in GBP',
    approved_by COMMENT 'Data owner who approved',
    approved_at COMMENT 'When access was granted (UTC)')
 COMMENT 'Who has access to which table right now (approved requests only) and what it costs per month.'
-AS SELECT r.requester, r.table_name, t.tag_value, r.licence_cost, r.decided_by, r.decided_at
-FROM hackathon_gold.sierra.access_requests r
-LEFT JOIN hackathon_gold.information_schema.table_tags t
-  ON t.schema_name = 'sierra' AND t.tag_name = 'sensitivity'
- AND concat(t.catalog_name, '.', t.schema_name, '.', t.table_name) = r.table_name
-WHERE r.status = 'approved';
+-- No join to information_schema: Genie runs without access to it.
+AS SELECT requester, table_name, licence_cost, decided_by, decided_at
+FROM hackathon_gold.sierra.access_requests
+WHERE status = 'approved';
