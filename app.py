@@ -384,14 +384,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
   background: rgba(37,99,235,.22); border-color: rgba(127,174,255,.30) !important; transform: none; box-shadow: none; }
 
 [data-testid="stPopoverBody"] .stButton:has(> button[kind="secondary"]) { margin-bottom: -.6rem; }
-.topbar-rule { margin: 0 0 1.1rem; }
-/* Floating glass top bar: stays put while content scrolls underneath and blurs through it. */
-[data-testid="stHorizontalBlock"]:has(.appname) {
-  position: sticky; top: .6rem; z-index: 50; padding: .45rem .55rem .45rem .9rem; border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.74);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 10px 30px rgba(0,0,0,.35);
-  backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%); }
+.topbar-rule { border-bottom: 1px solid var(--rule); margin: .35rem 0 1.1rem; }
 /* Same glass for dropdown menus and tooltips: floating layers over content. */
 [data-baseweb="popover"] ul[role="listbox"], [data-baseweb="popover"] [data-baseweb="menu"],
 [data-baseweb="tooltip"] > div, [data-testid="stTooltipContent"] {
