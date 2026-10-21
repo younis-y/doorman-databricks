@@ -25,8 +25,8 @@ so every grant needs an owner, a reason and a receipt."*
 
 | Owner | Files | Job |
 |---|---|---|
-| **You (friend + Codex)** | `app.py`, `db.py`, `app.yaml`, `requirements.txt` | The app: three pages, reads, UI, demo script |
-| **Younis (+ Claude Code)** | `governance.py`, `setup.sql` | Tables, tags, the grant logic, deploying the app |
+| **Jose + Malik (Codex)** | `app.py`, `db.py`, `app.yaml`, `requirements.txt` | The app: three pages, reads, UI, demo script |
+| **Younis (+ Claude Code) + Patrick** | `governance.py`, `setup.sql`, `BACKEND.md` | Tables, tags, the grant logic, permissions, deploying the app |
 
 Do not edit the other side's files. If you need a change there, say so to Younis.
 `governance.py` does not exist yet: create `governance_stub.py` with the same signatures

@@ -1,7 +1,7 @@
 # Team Sierra: backend onboarding (Desk Data Access)
 
 Read `AGENTS.md` first (theme, contract, timeline). This file is your slice: the platform
-and operations side. Jose and his helper build the UI with Codex; Younis (with Claude Code)
+and operations side. Jose and Malik build the UI with Codex; Younis (with Claude Code)
 writes `governance.py`; you make sure the app can run, the grants can happen and the demo
 can be rehearsed twice.
 
@@ -9,9 +9,9 @@ can be rehearsed twice.
 
 | Person | Owns |
 |---|---|
-| Jose + helper (Codex) | `app.py`, `db.py`, `app.yaml`, UI, demo narration |
+| Jose + Malik (Codex) | `app.py`, `db.py`, `app.yaml`, UI, demo narration |
 | Younis (+ Claude Code) | `governance.py` (request / approve = real GRANT / reject / revoke), `setup.sql` |
-| **You** | App permissions, mentor asks, Genie space, deploy, demo accounts, reset, rehearsal |
+| **Patrick** | App permissions, mentor asks, Genie space, deploy, demo accounts, reset, rehearsal |
 
 ## Workspace
 
