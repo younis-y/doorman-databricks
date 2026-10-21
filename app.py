@@ -44,7 +44,7 @@ with open(os.path.join(os.path.dirname(__file__), "genie_presets.json")) as _f:
     GENIE_PRESETS: list[str] = json.load(_f)
 
 ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-st.set_page_config(page_title="Desk Data Access", page_icon=os.path.join(ASSETS, "favicon.png"),
+st.set_page_config(page_title="Desk Data Access", page_icon=os.path.join(ASSETS, "emblem.svg"),
                    layout="wide", initial_sidebar_state="expanded")
 
 # --------------------------------------------------------------------------- look
@@ -128,7 +128,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 [data-testid="stSidebarNavViewButton"] { display: none !important; }
 /* No anchor-link icons beside section headings. */
 [data-testid="stHeaderActionElements"], [data-testid="stHeadingWithActionElements"] a[href^="#"] { display: none !important; }
-[data-testid="stSidebarUserContent"] { padding-top: 1rem !important; }  /* same gap as above the rule */
+[data-testid="stSidebarUserContent"] { padding-top: 1.75rem !important; }  /* optically matches the gap above the rule */
 [data-testid="stSidebarNav"] a { border-radius: 999px; padding: .3rem .85rem; margin: .12rem 0;
   border: 1px solid transparent; background: transparent; transition: background .15s ease, border-color .15s ease; }
 [data-testid="stSidebarNav"] a:hover { background: rgba(255,255,255,.045) !important; border-color: rgba(255,255,255,.08); }
@@ -384,14 +384,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
   background: rgba(37,99,235,.22); border-color: rgba(127,174,255,.30) !important; transform: none; box-shadow: none; }
 
 [data-testid="stPopoverBody"] .stButton:has(> button[kind="secondary"]) { margin-bottom: -.6rem; }
-.topbar-rule { margin: 0 0 1.1rem; }
-/* Floating glass top bar: stays put while content scrolls underneath and blurs through it. */
-[data-testid="stHorizontalBlock"]:has(.appname) {
-  position: sticky; top: .6rem; z-index: 50; padding: .45rem .55rem .45rem .9rem; border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.74);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 10px 30px rgba(0,0,0,.35);
-  backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%); }
+.topbar-rule { border-bottom: 1px solid var(--rule); margin: .35rem 0 1.1rem; }
 /* Same glass for dropdown menus and tooltips: floating layers over content. */
 [data-baseweb="popover"] ul[role="listbox"], [data-baseweb="popover"] [data-baseweb="menu"],
 [data-baseweb="tooltip"] > div, [data-testid="stTooltipContent"] {
@@ -583,7 +576,7 @@ with st.sidebar:
         st.rerun()
 
 bar_l, bar_r = st.columns([3, 1.4], vertical_alignment="center")
-# The front door, ajar: one glass tile shared with the favicon (assets/favicon.png is rendered from it).
+# The front door, ajar: assets/emblem.svg is the single source for this header emblem and the favicon.
 with open(os.path.join(ASSETS, "emblem.svg")) as _f:
     EMBLEM = _f.read().split("?>")[-1].strip()
 bar_l.markdown(f'<div class="appname">{EMBLEM}<span class="name">Desk Data Access</span></div>',
