@@ -24,8 +24,9 @@ ALTER TABLE hackathon_gold.sierra.eod_prices SET TAGS (
 ALTER TABLE hackathon_gold.sierra.positions SET TAGS (
   'data_owner' = 'younis@sierra.example', 'sensitivity' = 'confidential', 'licence_cost_gbp' = '0',
   'description' = 'Desk positions by ticker and book');
+-- Second owner so the demo shows routing: vendor_faults requests go to Jose, not Younis.
 ALTER TABLE hackathon_gold.sierra.vendor_faults SET TAGS (
-  'data_owner' = 'younis@sierra.example', 'sensitivity' = 'internal', 'licence_cost_gbp' = '0',
+  'data_owner' = 'jose@sierra.example', 'sensitivity' = 'internal', 'licence_cost_gbp' = '0',
   'description' = 'Price faults where the two vendors disagree, with GBP exposure');
 
 CREATE TABLE IF NOT EXISTS hackathon_gold.sierra.access_requests (

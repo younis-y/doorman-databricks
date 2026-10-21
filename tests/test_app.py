@@ -18,6 +18,8 @@ TAGS = [
     ("eod_prices", "licence_cost_gbp", "120"), ("eod_prices", "description", "EOD bars"),
     ("positions", "data_owner", OWNER), ("positions", "sensitivity", "confidential"),
     ("positions", "licence_cost_gbp", "0"), ("positions", "description", "Desk book"),
+    ("vendor_faults", "data_owner", "other.owner@desk.com"), ("vendor_faults", "sensitivity", "internal"),
+    ("vendor_faults", "licence_cost_gbp", "0"), ("vendor_faults", "description", "Vendor faults"),
     ("scratch", "sensitivity", "internal"),  # no data_owner: must not appear
 ]
 CALLS = []
@@ -59,7 +61,8 @@ def goto(at, url_path):
 
 def select_asset(at, row):
     """Pick a data product in the Request access dropdown (0 = eod_prices, 1 = positions)."""
-    table = ["hackathon_gold.sierra.eod_prices", "hackathon_gold.sierra.positions"][row]
+    table = ["hackathon_gold.sierra.eod_prices", "hackathon_gold.sierra.positions",
+             "hackathon_gold.sierra.vendor_faults"][row]
     at.selectbox(key="product_pick").set_value(table)
     return run(at)
 
@@ -76,7 +79,7 @@ def stub_rows(at):
 def test_catalogue_is_tag_driven():
     at = run()
     df = at.dataframe[0].value
-    assert list(df["Asset"]) == ["eod_prices", "positions"]
+    assert list(df["Asset"]) == ["eod_prices", "positions", "vendor_faults"]
     assert "scratch" not in df["Asset"].tolist()
     assert any("Local simulation" in m.value for m in at.markdown)
     src = open(APP).read()
@@ -196,3 +199,12 @@ def test_tracker_states_for_requester():
     assert any("b-acc-approved" in m.value for m in at.markdown)
     assert any("step done" in m.value and "Access granted" in m.value for m in at.markdown)
     assert any("SELECT * FROM hackathon_gold.sierra.eod_prices" in c.value for c in at.code)
+
+
+def test_requests_route_to_each_tables_own_owner():
+    at = _request_as_analyst(run(), 2, "Reconcile vendor breaks for the morning call")
+    assert stub_rows(at)[0]["approver"] == "other.owner@desk.com"
+    at = _switch(at, OWNER, "approvals")
+    assert not any(b.label == "Approve access" for b in at.button)
+    at = _switch(at, "other.owner@desk.com", "approvals")
+    assert any(b.label == "Approve access" for b in at.button)
