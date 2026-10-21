@@ -307,6 +307,9 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 [data-testid="stMetric"] { padding: 1rem 1.15rem !important; }
 [data-testid="stMetricValue"] > div { font-size: 2rem; }
 .lt { margin-top: -.2rem !important; }
+/* Code keeps a monospace face (the one-typeface rule above would otherwise reach its tokens). */
+.stApp pre, .stApp pre *, .stApp code, .stApp code * {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace !important; }
 </style>
 """, unsafe_allow_html=True)
 
