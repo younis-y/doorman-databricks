@@ -44,7 +44,7 @@ with open(os.path.join(os.path.dirname(__file__), "genie_presets.json")) as _f:
     GENIE_PRESETS: list[str] = json.load(_f)
 
 ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-st.set_page_config(page_title="Desk Data Access", page_icon=os.path.join(ASSETS, "favicon.png"),
+st.set_page_config(page_title="Desk Data Access", page_icon=os.path.join(ASSETS, "emblem.svg"),
                    layout="wide", initial_sidebar_state="expanded")
 
 # --------------------------------------------------------------------------- look
@@ -128,7 +128,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 [data-testid="stSidebarNavViewButton"] { display: none !important; }
 /* No anchor-link icons beside section headings. */
 [data-testid="stHeaderActionElements"], [data-testid="stHeadingWithActionElements"] a[href^="#"] { display: none !important; }
-[data-testid="stSidebarUserContent"] { padding-top: 1rem !important; }  /* same gap as above the rule */
+[data-testid="stSidebarUserContent"] { padding-top: 1.75rem !important; }  /* optically matches the gap above the rule */
 [data-testid="stSidebarNav"] a { border-radius: 999px; padding: .3rem .85rem; margin: .12rem 0;
   border: 1px solid transparent; background: transparent; transition: background .15s ease, border-color .15s ease; }
 [data-testid="stSidebarNav"] a:hover { background: rgba(255,255,255,.045) !important; border-color: rgba(255,255,255,.08); }
@@ -583,7 +583,7 @@ with st.sidebar:
         st.rerun()
 
 bar_l, bar_r = st.columns([3, 1.4], vertical_alignment="center")
-# The front door, ajar: one glass tile shared with the favicon (assets/favicon.png is rendered from it).
+# The front door, ajar: assets/emblem.svg is the single source for this header emblem and the favicon.
 with open(os.path.join(ASSETS, "emblem.svg")) as _f:
     EMBLEM = _f.read().split("?>")[-1].strip()
 bar_l.markdown(f'<div class="appname">{EMBLEM}<span class="name">Desk Data Access</span></div>',
