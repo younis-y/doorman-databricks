@@ -125,7 +125,7 @@ def test_approver_sees_and_approves_once():
     assert any("Nothing waiting on you" in m.value for m in at.markdown)
     at = _switch(at, OWNER, "approvals")
     assert any("£120" in m.value for m in at.markdown)
-    at = click(at, "Approve access")
+    at = click(at, "Confirm approve")
     assert stub_rows(at)[0]["status"] == "approved"
     assert any("Access granted" in s.value for s in at.success)
 
@@ -134,7 +134,7 @@ def test_failed_grant_shows_error(monkeypatch):
     monkeypatch.setenv("STUB_FAIL_GRANT", "1")
     at = _request_as_analyst(run())
     at = _switch(at, OWNER, "approvals")
-    at = click(at, "Approve access")
+    at = click(at, "Confirm approve")
     assert stub_rows(at)[0]["status"] == "failed"
     assert any("Grant failed" in e.value and "PERMISSION_DENIED" in e.value for e in at.error)
 
@@ -184,7 +184,7 @@ def test_no_act_as_without_dev_user(monkeypatch):
 def test_revoke_from_approvals():
     at = _request_as_analyst(run())
     at = _switch(at, OWNER, "approvals")
-    at = click(at, "Approve access")
+    at = click(at, "Confirm approve")
     assert any("Active access you own" in h.value for h in at.subheader)
     at = click(at, "Confirm revoke")
     assert stub_rows(at)[0]["status"] == "revoked"
@@ -195,7 +195,7 @@ def test_tracker_states_for_requester():
     at = _request_as_analyst(run())
     assert any("Waiting on" in m.value for m in at.markdown)
     at = _switch(at, OWNER, "approvals")
-    at = click(at, "Approve access")
+    at = click(at, "Confirm approve")
     at = _switch(at, ANALYST, "catalogue")
     at = select_asset(at, 0)
     card = next(m.value for m in at.markdown if 'class="group"' in m.value)
@@ -207,9 +207,9 @@ def test_requests_route_to_each_tables_own_owner():
     at = _request_as_analyst(run(), 2, "Reconcile vendor breaks for the morning call")
     assert stub_rows(at)[0]["approver"] == "other.owner@desk.com"
     at = _switch(at, OWNER, "approvals")
-    assert not any(b.label == "Approve access" for b in at.button)
+    assert not any(b.label == "Confirm approve" for b in at.button)
     at = _switch(at, "other.owner@desk.com", "approvals")
-    assert any(b.label == "Approve access" for b in at.button)
+    assert any(b.label == "Confirm approve" for b in at.button)
 
 
 def test_switching_user_switches_permissions_and_clears_messages():
@@ -220,7 +220,7 @@ def test_switching_user_switches_permissions_and_clears_messages():
     df = at.dataframe[0].value
     assert set(df["Your access"]) == {"No access"}  # owner has no requests of their own
     at = _switch(at, OWNER, "approvals")
-    assert any(b.label == "Approve access" for b in at.button)  # owner now sees the queue
+    assert any(b.label == "Confirm approve" for b in at.button)  # owner now sees the queue
 
 
 def test_switcher_lists_only_other_people():

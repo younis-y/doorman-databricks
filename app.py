@@ -54,7 +54,7 @@ st.markdown("""
   --bg: #17191E; --card: #212429; --raised: #2B2F36; --rule: rgba(255,255,255,.07);
   --ink: #F2F4F7; --muted: #A3ACB9; --faint: #8E98A8;
   --blue: #2563EB; --blue-hover: #1D4ED8; --blue-ink: #7FAEFF;
-  --green: #30D158; --amber: #FF9F0A; --red: #FF6961;
+  --green: #6CC28A; --amber: #E0A451; --red: #E07A74;  /* quiet: blue is the only loud colour */
   --radius: 16px; --radius-sm: 10px;
 }
 /* One typeface (HIG typography: minimise typefaces): the system font, SF on Apple devices. */
@@ -97,6 +97,20 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 [data-testid="stSidebarHeader"] { height: 0 !important; min-height: 0 !important; padding: 0 !important;
   margin: 0 !important; position: relative; overflow: visible; }
 [data-testid="stSidebarCollapseButton"] { position: absolute; top: .4rem; right: .5rem; z-index: 3; }
+/* Sidebar open/close arrow: grey glass, blue edge and a press-in on hover, like the other controls. */
+[data-testid="stSidebarCollapseButton"] button, [data-testid="stSidebarCollapsedControl"] button {
+  width: 34px; height: 34px; border-radius: 11px !important; color: var(--ink) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.04) 100%), var(--raised) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.3);
+  backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%);
+  transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease; }
+[data-testid="stSidebarCollapseButton"] button:hover, [data-testid="stSidebarCollapsedControl"] button:hover {
+  border-color: rgba(127,174,255,.65) !important; transform: translateY(1px);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.35), 0 0 0 3px rgba(37,99,235,.18); }
+[data-testid="stSidebarCollapseButton"] button:active, [data-testid="stSidebarCollapsedControl"] button:active {
+  transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0,0,0,.45); }
+[data-testid="stSidebarCollapseButton"] { visibility: visible !important; }
 [data-testid="stSidebarNavItems"] { padding: 1.9rem 1rem 1rem; margin: 0; }
 [data-testid="stSidebarNavSeparator"] { margin: 0 1rem; }
 [data-testid="stSidebarUserContent"] { padding-top: 1rem !important; }  /* same gap as above the rule */
@@ -170,7 +184,9 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
   border: 1px solid var(--rule) !important; }
 .stTextInput [data-baseweb="input"]:focus-within, .stTextArea [data-baseweb="textarea"]:focus-within {
   border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(37,99,235,.25); }
-[data-testid="stAlert"] { border-radius: 12px; }
+[data-testid="stAlert"] { border-radius: 14px; }
+[data-testid="stAlertContainer"] { border-radius: 14px !important; border: 0 !important;
+  filter: saturate(.45) brightness(.92); }
 
 /* Header: wordmark left, identity chip right. */
 .dda-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
@@ -186,14 +202,15 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 .dda-who.out { padding: .5rem .9rem; color: var(--muted); font-size: .88rem; }
 @media (max-width: 640px) { .quote { text-align: left; } }
 
-/* Pills: tinted fill, no outline, text always present. */
-.badge { display: inline-block; padding: .14rem .6rem; border-radius: 999px; font-size: .75rem;
-  font-weight: 600; line-height: 1.45; white-space: nowrap; vertical-align: middle; }
-.b-confidential, .b-rejected, .b-failed, .b-acc-rejected, .b-acc-failed { color: var(--red); background: rgba(255,105,97,.14); }
-.b-licensed { color: var(--blue-ink); background: rgba(37,99,235,.18); }
-.b-internal, .b-revoked, .b-other, .b-unclassified, .b-acc-none, .b-acc-revoked { color: var(--muted); background: rgba(163,172,185,.12); }
-.b-pending, .b-vague, .b-acc-pending { color: var(--amber); background: rgba(255,159,10,.14); }
-.b-approved, .b-acc-approved { color: var(--green); background: rgba(48,209,88,.14); }
+/* Tags: solid rounded fills in one neutral; status rides on a small dot, text always present. */
+.badge { display: inline-flex; align-items: center; gap: .4rem; padding: .18rem .65rem; border-radius: 999px;
+  font-size: .75rem; font-weight: 600; line-height: 1.4; white-space: nowrap; vertical-align: middle;
+  background: #343841; color: var(--ink); border: 0; }
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--faint); flex: none; }
+.b-pending::before, .b-vague::before, .b-acc-pending::before { background: var(--amber); }
+.b-approved::before, .b-acc-approved::before { background: var(--green); }
+.b-confidential::before, .b-rejected::before, .b-failed::before, .b-acc-rejected::before, .b-acc-failed::before { background: var(--red); }
+.b-licensed::before { background: var(--blue-ink); }
 
 .asset { font-size: 1.25rem; font-weight: 650; color: var(--ink); letter-spacing: -0.01em; }
 .fq { color: var(--faint); font-size: .8rem; font-family: ui-monospace, "SF Mono", Menlo, monospace; margin-top: .15rem; }
@@ -205,10 +222,10 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 
 /* The price: the one big number on each card. */
 .quote { text-align: right; }
-.quote .amt { font-size: 1.6rem; font-weight: 700; color: var(--ink); line-height: 1;
+.quote .amt { font-size: 2.6rem; font-weight: 700; color: var(--ink); line-height: 1;
   font-variant-numeric: tabular-nums; letter-spacing: -0.035em; }
 .quote .amt.zero { color: var(--faint); }
-.quote .per { color: var(--faint); font-size: .78rem; margin-top: .3rem; }
+.quote .per { color: var(--faint); font-size: .7rem; margin-top: .35rem; letter-spacing: .01em; }
 
 /* Access tracker */
 .track { display: flex; align-items: flex-start; gap: .6rem; margin: 1.2rem 0 .9rem; flex-wrap: wrap;
@@ -263,10 +280,10 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 .g-title { font-size: 1.2rem; font-weight: 650; color: var(--ink); letter-spacing: -0.02em; }
 .g-desc { color: var(--muted); font-size: .92rem; margin-top: .2rem; line-height: 1.45; max-width: 62ch; }
 .g-price { text-align: right; white-space: nowrap; }
-.g-price b { display: block; font-size: 1.45rem; font-weight: 650; color: var(--ink);
+.g-price b { display: block; font-size: 2.4rem; font-weight: 700; color: var(--ink);
   font-variant-numeric: tabular-nums; letter-spacing: -0.03em; line-height: 1.1; }
 .g-price b.zero { color: var(--muted); }
-.g-price small { color: var(--faint); font-size: .78rem; }
+.g-price small { color: var(--faint); font-size: .7rem; letter-spacing: .01em; }
 .g-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
   margin-left: 1.1rem; padding: .62rem 1.1rem .62rem 0; border-top: 1px solid var(--rule); font-size: .92rem; }
 .g-row > span:first-child { color: var(--ink); }
@@ -274,7 +291,17 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .45rem;
   vertical-align: middle; background: var(--faint); }
 .d-approved { background: var(--green); } .d-pending { background: var(--amber); }
-.d-rejected, .d-failed { background: var(--red); }
+.d-rejected, .d-failed, .d-confidential { background: var(--red); }
+.d-licensed { background: var(--blue-ink); }
+/* Audit tiles: a dot in each status's colour, blue for money. Order matches the metric columns. */
+[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div [data-testid="stMetricLabel"] p::before {
+  content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .45rem;
+  vertical-align: middle; background: var(--faint); }
+[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div:nth-child(1) [data-testid="stMetricLabel"] p::before { background: var(--amber); }
+[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div:nth-child(2) [data-testid="stMetricLabel"] p::before { background: var(--green); }
+[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div:nth-child(3) [data-testid="stMetricLabel"] p::before,
+[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div:nth-child(4) [data-testid="stMetricLabel"] p::before { background: var(--red); }
+[data-testid="stHorizontalBlock"]:has([data-testid="stMetric"]) > div:nth-child(6) [data-testid="stMetricLabel"] p::before { background: var(--blue-ink); }
 .g-foot { color: var(--faint); font-size: .8rem; margin: -.5rem 0 1rem 1.1rem; }
 
 /* Determinate progress (HIG progress indicators): one track, three segments. */
@@ -294,14 +321,8 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 /* Liquid glass panels: one material for every surface that holds content. */
 .group, .empty, [data-testid="stMetric"],
 [data-testid="stVerticalBlockBorderWrapper"]:not(.st-emotion-cache-0) {
-  background: linear-gradient(180deg, rgba(255,255,255,.075) 0%, rgba(255,255,255,.025) 60%, rgba(255,255,255,.015) 100%),
-              var(--card) !important;
-  border: 1px solid rgba(255,255,255,.09) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 8px 24px rgba(0,0,0,.22), 0 1px 2px rgba(0,0,0,.3);
-  backdrop-filter: blur(18px) saturate(150%); -webkit-backdrop-filter: blur(18px) saturate(150%); }
-[data-testid="stDataFrame"] > div {
-  border: 1px solid rgba(255,255,255,.09) !important; border-radius: 14px !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 24px rgba(0,0,0,.22); }
+  background: #25282E !important; border: 0 !important; box-shadow: none !important; }
+[data-testid="stDataFrame"] > div { border: 0 !important; border-radius: 14px !important; box-shadow: none; }
 .stCode, [data-testid="stCode"] pre {
   border: 1px solid rgba(255,255,255,.09); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
 /* Empty states: centred and quiet, an invitation rather than a box of text. */
@@ -309,11 +330,28 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 [data-testid="stMetric"] { padding: 1rem 1.15rem !important; }
 [data-testid="stMetricValue"] > div { font-size: 2rem; }
 .lt { margin-top: -.2rem !important; }
+/* Plain-text secondary actions in the content area; the sidebar and account pill keep their glass. */
+.block-container .stButton > button[kind="secondary"], .block-container [data-testid="stPopover"] button {
+  background: transparent !important; border-color: transparent !important; box-shadow: none !important;
+  backdrop-filter: none !important; color: var(--blue-ink) !important; font-weight: 600; }
+.block-container .stButton > button[kind="secondary"]:hover, .block-container [data-testid="stPopover"] button:hover {
+  background: rgba(127,174,255,.10) !important; color: #A9C8FF !important; transform: translateY(1px); }
+/* Approve opens a confirm step but is still the primary action on the ticket. */
+[data-testid="stVerticalBlockBorderWrapper"]:has(.quote) [data-testid="stPopover"] button {
+  color: #FFFFFF !important; border: 1px solid #1A47B5 !important;
+  background: linear-gradient(180deg, #2D69EA 0%, #2563EB 45%, #1E55D4 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.30), inset 0 -2px 0 rgba(10,30,90,.35), 0 3px 10px rgba(37,99,235,.35) !important; }
+[data-testid="stVerticalBlockBorderWrapper"]:has(.quote) [data-testid="stPopover"] button:hover {
+  background: linear-gradient(180deg, #2459D8 0%, #1E51CC 50%, #1A47B5 100%) !important; color: #FFFFFF !important;
+  box-shadow: inset 0 2px 5px rgba(5,20,70,.45) !important; }
 /* Account pill in the top bar: a glass button with the user's initial; opens the switcher. */
 [data-testid="stHorizontalBlock"]:has(.appname) { align-items: center; }
 [data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] { display: flex; justify-content: flex-end; }
 [data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button {
-  min-height: 38px; padding: 0 .9rem 0 .3rem; font-weight: 500; font-size: .88rem; }
+  min-height: 38px; padding: 0 .9rem 0 .3rem; font-weight: 500; font-size: .88rem; color: var(--ink) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.04) 100%), var(--raised) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.3) !important; }
 [data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button p {
   display: inline-flex; align-items: center; gap: .55rem; margin: 0; }
 [data-testid="stHorizontalBlock"]:has(.appname) [data-testid="stPopover"] button p::before {
@@ -324,16 +362,14 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
 [data-testid="stPopoverBody"] [data-testid="stVerticalBlockBorderWrapper"] {
   background: transparent !important; border: 0 !important; box-shadow: none !important;
   backdrop-filter: none !important; padding: 0 !important; }
-[data-testid="stPopoverBody"] .stButton > button {
+[data-testid="stPopoverBody"] .stButton > button[kind="secondary"] {
   justify-content: flex-start; min-height: 36px; border-radius: 10px; padding: 0 .75rem;
   background: transparent; border-color: transparent; box-shadow: none; font-weight: 500; }
-[data-testid="stPopoverBody"] .stButton > button:focus:not(:focus-visible) { border-color: transparent !important; }
-[data-testid="stPopoverBody"] .stButton > button:hover {
+[data-testid="stPopoverBody"] .stButton > button[kind="secondary"]:focus:not(:focus-visible) { border-color: transparent !important; }
+[data-testid="stPopoverBody"] .stButton > button[kind="secondary"]:hover {
   background: rgba(37,99,235,.22); border-color: rgba(127,174,255,.30) !important; transform: none; box-shadow: none; }
-[data-testid="stPopoverBody"] .stButton > button[kind="primary"] {
-  background: linear-gradient(180deg, rgba(45,105,234,.34) 0%, rgba(30,85,212,.24) 100%);
-  border-color: rgba(127,174,255,.35); box-shadow: inset 0 1px 0 rgba(255,255,255,.14); font-weight: 600; }
-[data-testid="stPopoverBody"] .stButton { margin-bottom: -.6rem; }
+
+[data-testid="stPopoverBody"] .stButton:has(> button[kind="secondary"]) { margin-bottom: -.6rem; }
 .topbar-rule { border-bottom: 1px solid var(--rule); margin: .35rem 0 1.1rem; }
 [data-testid="stPopoverBody"] { border-radius: 16px !important; border: 1px solid rgba(255,255,255,.14) !important;
   background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.52) !important;
@@ -397,10 +433,10 @@ def local(s: pd.Series) -> pd.Series:
 
 
 def status_style(v: str) -> str:
-    c = {"pending": "#FF9F0A", "approved": "#30D158", "granted": "#30D158", "rejected": "#FF6961",
-         "failed": "#FF6961", "grant failed": "#FF6961", "confidential": "#FF6961",
-         "licensed": "#7FAEFF"}.get(str(v).lower())
-    return f"color: {c}; font-weight: 600" if c else "color: #A3ACB9"
+    c = {"pending": "#E0A451", "approved": "#6CC28A", "granted": "#6CC28A", "rejected": "#E07A74",
+         "failed": "#E07A74", "grant failed": "#E07A74",
+         "licensed": "#8FB3F0", "confidential": "#E07A74"}.get(str(v).lower())
+    return f"color: {c}; font-weight: 500" if c else "color: #A3ACB9"
 
 
 def when(t) -> str:
@@ -434,7 +470,7 @@ def load_catalogue() -> pd.DataFrame:
     return pd.DataFrame(out, columns=CATALOGUE_COLS)
 
 
-@st.cache_data(ttl=15, show_spinner=False)
+@st.cache_data(ttl=5, show_spinner=False)
 def _live_requests() -> list[dict]:
     return run_sql(f"SELECT * FROM {REQUESTS} ORDER BY requested_at DESC")
 
@@ -553,6 +589,16 @@ if (!P.__ddaHoverMenu) {
     }
   });
   d.addEventListener("click", (e) => { const b = pill(); if (b && b.contains(e.target) && e.isTrusted) ours = false; }, true);
+  // Streamlit 1.38 shows a false "Page not found" dialog on direct links to a page (the page still
+  // loads). Close only that dialog, as soon as it appears.
+  const dismiss = () => d.querySelectorAll('[role="dialog"]').forEach((dlg) => {
+    if (/Page not found/.test(dlg.textContent || "")) {
+      const close = dlg.querySelector('button[aria-label="Close"], button');
+      if (close) close.click();
+    }
+  });
+  dismiss();
+  new P.MutationObserver(dismiss).observe(d.body, { childList: true, subtree: true });
 }
 </script>""", height=0)
 st.markdown(f"""<div class="topbar-rule"></div><style>
@@ -655,7 +701,8 @@ def _submit(table: str, asset: str, owner: str, key: str) -> None:
 def product_card(a) -> None:
     state, row = access_of(a.table)
     note = str((row or {}).get("note") or "")
-    rows = [("Owner", esc(a.owner)), ("Sensitivity", esc(a.sensitivity.capitalize())),
+    rows = [("Owner", esc(a.owner)),
+            ("Sensitivity", f'<span class="dot d-{esc(a.sensitivity)}"></span>{esc(a.sensitivity.capitalize())}'),
             ("Your access", f'<span class="dot d-{esc(state)}"></span>{esc(ACCESS_LABEL[state])}'),
             ("Location", esc(a.table))]
     if state in ("rejected", "failed", "revoked") and note:
@@ -846,7 +893,7 @@ def pending_queue(queue: pd.DataFrame) -> None:
             vague = badge("Vague reason", "vague") if str(r.note).strip().lower() == "vague" else ""
             with left:
                 st.markdown(f"""
-<div class="asset">{esc(asset)} <span class="meta">&nbsp;{esc(sens.get(r.table_name, 'unclassified').capitalize())}</span> {vague}</div>
+<div class="asset">{esc(asset)} &nbsp;{badge(sens.get(r.table_name, 'unclassified').capitalize(), sens.get(r.table_name, 'unclassified'))} {vague}</div>
 <div class="meta"><b>{esc(r.requester)}</b> asked {esc(ago(r.requested_at))}</div>
 <div class="reason">{esc(r.reason)}</div>
 """, unsafe_allow_html=True)
@@ -856,8 +903,11 @@ def pending_queue(queue: pd.DataFrame) -> None:
                             unsafe_allow_html=True)
             key = f"note::{r.id}"
             c1, c2, c3 = st.columns([1.1, 3.2, 1.1], vertical_alignment="bottom")
-            c1.button("Approve access", key=f"approve::{r.id}", type="primary", use_container_width=True,
-                      on_click=_approve, args=(r.id, r.requester, asset))
+            with c1.popover("Approve access", use_container_width=True):
+                st.markdown(f"Give **{r.requester}** SELECT on **{asset}**? This runs a real Unity Catalog "
+                            f"grant and adds **{money(r.licence_cost)}** a month.")
+                st.button("Confirm approve", key=f"approve::{r.id}", type="primary", use_container_width=True,
+                          on_click=_approve, args=(r.id, r.requester, asset))
             c2.text_input("Rejection note (required to reject)", key=key,
                           placeholder=f"Tell {r.requester} why, for example: use the delayed feed instead")
             c3.button("Reject request", key=f"reject::{r.id}", use_container_width=True,
