@@ -187,10 +187,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 [data-baseweb="select"] > div:hover { border-color: rgba(127,174,255,.40) !important; }
 [data-baseweb="select"] > div:focus-within { border-color: var(--blue) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 3px rgba(37,99,235,.28); }
-[data-baseweb="popover"] ul[role="listbox"], [data-baseweb="popover"] [data-baseweb="menu"] {
-  background: rgba(36,40,47,.82) !important; border: 1px solid rgba(255,255,255,.12); border-radius: 14px !important;
-  backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
-  box-shadow: 0 12px 32px rgba(0,0,0,.45); padding: 4px !important; }
+
 [data-baseweb="popover"] li[role="option"] { border-radius: 9px; margin: 1px 0; }
 [data-baseweb="popover"] li[role="option"]:hover, [data-baseweb="popover"] li[aria-selected="true"] {
   background: rgba(37,99,235,.30) !important; }
@@ -386,7 +383,30 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
   background: rgba(37,99,235,.22); border-color: rgba(127,174,255,.30) !important; transform: none; box-shadow: none; }
 
 [data-testid="stPopoverBody"] .stButton:has(> button[kind="secondary"]) { margin-bottom: -.6rem; }
-.topbar-rule { border-bottom: 1px solid var(--rule); margin: .35rem 0 1.1rem; }
+.topbar-rule { margin: 0 0 1.1rem; }
+/* Floating glass top bar: stays put while content scrolls underneath and blurs through it. */
+[data-testid="stHorizontalBlock"]:has(.appname) {
+  position: sticky; top: .6rem; z-index: 50; padding: .45rem .55rem .45rem .9rem; border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.74);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 10px 30px rgba(0,0,0,.35);
+  backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%); }
+/* Same glass for dropdown menus and tooltips: floating layers over content. */
+[data-baseweb="popover"] ul[role="listbox"], [data-baseweb="popover"] [data-baseweb="menu"],
+[data-baseweb="tooltip"] > div, [data-testid="stTooltipContent"] {
+  background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.52) !important;
+  border: 1px solid rgba(255,255,255,.14) !important; border-radius: 14px !important; color: var(--ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 16px 40px rgba(0,0,0,.45) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important; -webkit-backdrop-filter: blur(28px) saturate(180%) !important; }
+[data-baseweb="tooltip"] { background: transparent !important; }
+/* Select / multiselect menus: their wrappers paint solid; clear them and put the glass on the list. */
+[data-baseweb="popover"]:has(ul), [data-baseweb="popover"]:has(ul) > div:not([data-testid="stPopoverBody"]) {
+  background: transparent !important; box-shadow: none !important; }
+[data-baseweb="popover"] ul, [data-testid="stSelectboxVirtualDropdown"] {
+  background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.55) !important;
+  border: 1px solid rgba(255,255,255,.14) !important; border-radius: 14px !important; padding: 4px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 16px 40px rgba(0,0,0,.45) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important; -webkit-backdrop-filter: blur(28px) saturate(180%) !important; }
 [data-testid="stPopoverBody"] { border-radius: 16px !important; border: 1px solid rgba(255,255,255,.14) !important;
   background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.52) !important;
   backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
