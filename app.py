@@ -392,6 +392,29 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
   box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 16px 40px rgba(0,0,0,.45) !important;
   backdrop-filter: blur(28px) saturate(180%) !important; -webkit-backdrop-filter: blur(28px) saturate(180%) !important; }
 [data-baseweb="tooltip"] { background: transparent !important; }
+/* Spring press, SwiftUI-style: controls shrink while held and spring back with a slight overshoot. */
+.stButton > button, .stFormSubmitButton > button, [data-testid="stPopover"] button,
+[data-testid="stSidebarNav"] a, [data-testid="stElementToolbar"] button,
+[data-testid="stSidebarCollapseButton"] button, [data-testid="stSidebarCollapsedControl"] button {
+  transition: transform .34s cubic-bezier(.34, 1.56, .64, 1), background .15s ease, box-shadow .15s ease,
+              border-color .15s ease, color .15s ease !important; }
+.stButton > button:active, .stFormSubmitButton > button:active, [data-testid="stPopover"] button:active,
+[data-testid="stSidebarNav"] a:active {
+  transform: translateY(1px) scale(.96) !important; transition-duration: .08s !important; }
+/* Table toolbar (download, search, full screen): a small glass pill with springy icons. */
+[data-testid="stElementToolbar"] > div {
+  background: linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 100%), rgba(30,33,40,.6);
+  border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 2px 3px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 6px 18px rgba(0,0,0,.35);
+  backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%); }
+[data-testid="stElementToolbar"] button { border-radius: 999px !important; background: transparent !important;
+  color: var(--muted) !important; width: 30px; height: 30px; }
+[data-testid="stElementToolbar"] button:hover { background: rgba(37,99,235,.24) !important; color: #FFFFFF !important; }
+[data-testid="stElementToolbar"] button:active { transform: scale(.84) !important; transition-duration: .07s !important; }
+@media (prefers-reduced-motion: reduce) {
+  .stButton > button, .stFormSubmitButton > button, [data-testid="stPopover"] button, [data-testid="stSidebarNav"] a,
+  [data-testid="stElementToolbar"] button { transition: background .15s ease, color .15s ease !important; transform: none !important; }
+}
 /* Select / multiselect menus: their wrappers paint solid; clear them and put the glass on the list. */
 [data-baseweb="popover"]:has(ul), [data-baseweb="popover"]:has(ul) > div:not([data-testid="stPopoverBody"]) {
   background: transparent !important; box-shadow: none !important; }
@@ -628,6 +651,21 @@ if (!P.__ddaHoverMenu) {
   });
   dismiss();
   new P.MutationObserver(dismiss).observe(d.body, { childList: true, subtree: true });
+  // Full-screen tables zoom open and settle back, instead of jumping (skipped with reduced motion).
+  const calm = P.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const spring = "cubic-bezier(.2, .9, .25, 1.12)";
+  const full = new P.WeakMap();
+  const watchFull = () => d.querySelectorAll('[data-testid="stFullScreenFrame"]').forEach((f) => {
+    const now = P.getComputedStyle(f).position === "fixed";
+    if (full.has(f) && full.get(f) !== now && !calm) {
+      f.animate(now ? [{ transform: "scale(.94)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }]
+                    : [{ transform: "scale(1.03)", opacity: .4 }, { transform: "scale(1)", opacity: 1 }],
+                { duration: now ? 320 : 260, easing: spring });
+    }
+    full.set(f, now);
+  });
+  watchFull();
+  new P.MutationObserver(watchFull).observe(d.body, { attributes: true, attributeFilter: ["class", "style"], subtree: true });
 }
 </script>""", height=0)
 st.markdown(f"""<div class="topbar-rule"></div><style>
