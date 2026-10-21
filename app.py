@@ -831,6 +831,27 @@ def tracker(state: str, row: dict | None, owner: str) -> str:
             f'<div class="prog-steps">{steps}</div><div class="prog-note">{safe}</div></div>')
 
 
+DOWNLOAD_ROWS = 5000
+
+
+def download_box(a) -> None:
+    """Fetch and offer the granted table as CSV. The SELECT runs as the signed-in user, so
+    Unity Catalog enforces the grant: without one it fails here too. `a.table` comes from
+    the tag-driven catalogue (an allowlist), never from input."""
+    slot = f"csv::{a.table}"
+    if st.button(f"Prepare CSV (first {DOWNLOAD_ROWS:,} rows)", key=f"dl::{a.table}"):
+        try:
+            with st.spinner("Reading from Unity Catalog..."):
+                rows = run_sql(f"SELECT * FROM {a.table} LIMIT {DOWNLOAD_ROWS}")
+            st.session_state[slot] = pd.DataFrame(rows).to_csv(index=False).encode()
+        except Exception as e:  # noqa: BLE001 - a denied read is the point of showing it
+            st.session_state.pop(slot, None)
+            st.error(f"Couldn't read {a.asset}: {friendly(e)}")
+    if slot in st.session_state:
+        st.download_button(f"Download {a.asset}.csv", st.session_state[slot],
+                           file_name=f"{a.asset}.csv", mime="text/csv", key=f"dlb::{a.table}")
+
+
 def _submit(table: str, asset: str, owner: str, key: str) -> None:
     reason = st.session_state.get(key, "")
     if not reason.strip():
@@ -873,6 +894,7 @@ def product_card(a) -> None:
     if state == "approved":
         st.caption("Query it in the SQL editor")
         st.code(f"SELECT * FROM {a.table} LIMIT 5", language="sql")
+        download_box(a)
 
     if state not in ("pending", "approved"):
         key = f"reason::{a.table}"
