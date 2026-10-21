@@ -11,7 +11,7 @@ can be rehearsed twice.
 |---|---|
 | Jose + Malik (Codex) | `app.py`, `db.py`, `app.yaml`, UI, demo narration |
 | Younis (+ Claude Code) | `governance.py` (request / approve = real GRANT / reject / revoke), `setup.sql` |
-| **Patrick** | App permissions, mentor asks, Genie space, deploy, demo accounts, reset, rehearsal |
+| **Patrick** | Mentor asks, **the denied analyst in the demo**, deploy, reset, rehearsal |
 
 ## Workspace
 
@@ -32,11 +32,16 @@ can be rehearsed twice.
 - SP holds MANAGE, USE SCHEMA, SELECT on `hackathon_gold.sierra` and SELECT, MODIFY on
   `access_requests` (§2 below is done).
 - App shared with group `users` CAN_USE (§3 done).
-- Genie views `v_request_log` and `v_entitlements` exist (§4 step 1 done).
+- Genie views exist AND the Genie space is built via the API: id **`01f1cd6fabb61c01a2d9f522b79791d0`**
+  ("Desk Data Access audit", two views only, instructions, three sample questions with SQL). §4 is done.
 - `governance.py` tested end to end against the live schema: real GRANT applied and revoked.
 
 Still blocked on the mentor: USE CATALOG for the SP, CAN_USE on the warehouse for the SP,
-and a non-sierra analyst login.
+and `USE CATALOG` for Patrick (see §1).
+
+**Patrick's account (`patrick@sierra.example`) is in no group**, so he is the denied analyst: he
+cannot read `hackathon_gold.sierra.positions` until the app grants it. He also cannot run
+the sierra-side SQL in §2 (already done, so it does not matter).
 - Repo: github.com/younis-y/sierra-front-door (ask Younis for collaborator access).
 
 ## Your tasks, in order
@@ -50,11 +55,12 @@ One message, three asks, with the SP client id:
 > `GRANT USE CATALOG ON CATALOG hackathon_gold TO <sp>`): we can't grant on the catalog.
 > (b) Please give the SP CAN_USE on warehouse `hackathon-sandbox-bi`: attaching it as an app
 > resource needs MANAGE on the warehouse, which we don't have.
-> (c) We need one login outside `hackathon_sierra` to play the analyst who is denied first.
-> A team-summit member works.
+> (c) Please add `patrick@sierra.example` to group `hackathon_summit` (USE CATALOG only): he is our
+> denied analyst for the demo and must stay out of `hackathon_sierra`.
 
 Why (c): Unity Catalog has no DENY. Our group has ALL PRIVILEGES on the schema, so no sierra
-member can ever be refused. Younis is in both groups, so he can't be the analyst either.
+member can ever be refused. Younis is in both groups, so he can't be the analyst. Patrick needs
+USE CATALOG on `hackathon_gold` (which summit membership gives) or the GRANT SELECT is useless.
 
 ### 2. Fallback grants we can do ourselves (SQL editor, as a sierra member)
 

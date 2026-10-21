@@ -258,7 +258,7 @@ env:
   - name: DATABRICKS_WAREHOUSE_ID
     value: a24300104bf8ac6c
   - name: GENIE_SPACE_ID
-    value: <from BACKEND.md §4>
+    value: 01f1cd6fabb61c01a2d9f522b79791d0
 ```
 
 (Attaching the warehouse as a resource needs MANAGE on it, which we don't have, so the
