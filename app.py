@@ -317,19 +317,20 @@ section[data-testid="stSidebar"] > div { width: 15rem !important; }
   width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; flex: none;
   background: linear-gradient(180deg, #8E8E93, #636366); color: #fff; font-size: .75rem; font-weight: 600; }
 /* Account list inside the menu: rows, not buttons, until hovered; the current user is blue glass. */
+[data-testid="stPopoverBody"] > div { background: transparent !important; }
 [data-testid="stPopoverBody"] [data-testid="stVerticalBlockBorderWrapper"] {
   background: transparent !important; border: 0 !important; box-shadow: none !important;
   backdrop-filter: none !important; padding: 0 !important; }
 [data-testid="stPopoverBody"] .stButton > button {
   justify-content: flex-start; min-height: 36px; border-radius: 10px; padding: 0 .75rem;
   background: transparent; border-color: transparent; box-shadow: none; font-weight: 500; }
+[data-testid="stPopoverBody"] .stButton > button:focus:not(:focus-visible) { border-color: transparent !important; }
 [data-testid="stPopoverBody"] .stButton > button:hover {
   background: rgba(37,99,235,.22); border-color: rgba(127,174,255,.30) !important; transform: none; box-shadow: none; }
 [data-testid="stPopoverBody"] .stButton > button[kind="primary"] {
   background: linear-gradient(180deg, rgba(45,105,234,.34) 0%, rgba(30,85,212,.24) 100%);
   border-color: rgba(127,174,255,.35); box-shadow: inset 0 1px 0 rgba(255,255,255,.14); font-weight: 600; }
 [data-testid="stPopoverBody"] .stButton { margin-bottom: -.6rem; }
-[data-testid="stPopoverBody"] [data-testid="stCaptionContainer"] { margin-top: .4rem; }
 .topbar-rule { border-bottom: 1px solid var(--rule); margin: .35rem 0 1.1rem; }
 [data-testid="stPopoverBody"] { border-radius: 14px !important; border: 1px solid rgba(255,255,255,.12) !important;
   background: rgba(36,40,47,.88) !important; backdrop-filter: blur(20px) saturate(160%);
@@ -502,21 +503,12 @@ bar_l.markdown('<div class="appname">Desk Data Access <span>&nbsp;Unity Catalog 
 with bar_r:
     with st.popover(ME or "Not signed in"):
         if LOCAL:
-            owners = set(CATALOGUE["owner"])
-            for title, group in (("Data owners", [p for p in people if p in owners]),
-                                 ("Analysts", [p for p in people if p not in owners])):
-                if not group:
-                    continue
-                st.caption(title)
-                for person in group:
-                    current = person == ME
-                    st.button(f"{person}  ✓" if current else person, key=f"as::{person}",
-                              type="primary" if current else "secondary", use_container_width=True,
-                              on_click=_act_as, args=(person,))
-            st.text_input("Someone else", key="act_as_other", placeholder="name@company.com",
+            # Only the people you can switch to; you're already shown on the pill.
+            for person in (p for p in people if p != ME):
+                st.button(person, key=f"as::{person}", use_container_width=True,
+                          on_click=_act_as, args=(person,))
+            st.text_input("Someone else", key="act_as_other", placeholder="Other email",
                           on_change=_act_as_other, label_visibility="collapsed")
-            if SIMULATED:
-                st.caption("Simulated: no permissions are changed.")
         elif ME:
             st.markdown(f"Signed in through Databricks as **{ME}**.")
             st.caption("To use the app as someone else, open it in a private window and sign in as them.")

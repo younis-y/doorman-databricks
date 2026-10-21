@@ -109,8 +109,10 @@ def _request_as_analyst(at, row=0, reason="Pricing the GCC basket for the mornin
 
 
 def _switch(at, who, page):
-    at.button(key=f"as::{who}").click()
-    at = run(at)
+    # The menu lists only the other people; switching to yourself is a no-op.
+    if any(b.key == f"as::{who}" for b in at.button):
+        at.button(key=f"as::{who}").click()
+        at = run(at)
     goto(at, page)
     return run(at)
 
@@ -219,3 +221,9 @@ def test_switching_user_switches_permissions_and_clears_messages():
     assert set(df["Your access"]) == {"No access"}  # owner has no requests of their own
     at = _switch(at, OWNER, "approvals")
     assert any(b.label == "Approve access" for b in at.button)  # owner now sees the queue
+
+
+def test_switcher_lists_only_other_people():
+    at = run()
+    keys = {b.key for b in at.button if (b.key or "").startswith("as::")}
+    assert f"as::{ANALYST}" not in keys and f"as::{OWNER}" in keys
