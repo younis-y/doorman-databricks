@@ -235,13 +235,13 @@ def _panel(at):
 
 def test_bell_counts_pending_for_owner_and_decisions_for_requester():
     at = _request_as_analyst(run())
-    assert "0 new" in _panel(at)  # the analyst has nothing to act on yet
+    assert " new<" not in _panel(at)  # nothing to act on yet: no count shown
     at = _switch(at, OWNER, "approvals")
     assert "1 new" in _panel(at) and "wants" in _panel(at)
     assert any('content: "1"' in m.value for m in at.markdown)  # blue badge with the count
     at = click(at, "Confirm approve")
-    assert "0 new" in _panel(at)  # decided: no longer waiting on the owner
+    assert " new<" not in _panel(at)  # decided: no longer waiting on the owner
     at = _switch(at, ANALYST, "catalogue")
     assert "1 new" in _panel(at) and "Approved" in _panel(at)
     at = click(at, "Mark all as read")
-    assert "0 new" in _panel(at) and not any('content: "1"' in m.value for m in at.markdown)
+    assert " new<" not in _panel(at) and not any('content: "1"' in m.value for m in at.markdown)

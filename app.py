@@ -166,6 +166,16 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
 [data-testid="stPopoverBody"] { min-width: 0 !important; width: max-content !important; max-width: 22rem; padding: .4rem !important; }
 [data-testid="stPopoverBody"] > div { background: transparent !important; }
 [data-testid="stPopoverBody"] .stTextInput { min-width: 14rem; }
+/* Confirm steps (approve, revoke): title, one quiet sentence, a full-width action. */
+[data-testid="stPopoverBody"]:has(.confirm) { width: 17rem !important; min-width: 17rem !important; padding: .9rem .9rem .75rem !important; }
+.confirm .ct { display: block; font-size: .95rem; font-weight: 650; color: var(--ink); margin-bottom: .35rem; }
+.confirm { margin-bottom: 1.15rem; }
+.confirm p { margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.45; }
+.confirm p b { color: var(--ink); font-weight: 600; }
+[data-testid="stPopoverBody"] a { color: inherit !important; text-decoration: none !important; }
+[data-testid="stPopoverBody"]:has(.confirm-revoke) .stButton > button[kind="primary"],
+[data-testid="stPopoverBody"]:has(.confirm-revoke) .stButton > button[kind="primary"]:focus:not(:focus-visible) { background: #C2453D; border-color: #C2453D !important; }
+[data-testid="stPopoverBody"]:has(.confirm-revoke) .stButton > button[kind="primary"]:hover { background: #A93A33; border-color: #A93A33; }
 [data-testid="stPopoverBody"] .stButton > button[kind="secondary"] {
   justify-content: flex-start; min-height: 36px; padding: 0 .7rem; background: transparent; border-color: transparent;
   color: var(--ink); font-weight: 500; }
@@ -984,9 +994,10 @@ def active_grants() -> None:
             c2.markdown(f'<div class="meta num" style="text-align:right"><b>{esc(money(r.licence_cost))}</b>'
                         f' / month</div>', unsafe_allow_html=True)
             with c3.popover("Revoke access", use_container_width=True):
-                st.markdown(f"Remove **{r.requester}**'s SELECT on **{asset}**? The audit trail keeps "
-                            "the record as revoked.")
-                st.button("Confirm revoke", key=f"revoke::{r.id}", type="primary",
+                st.markdown(f'<div class="confirm confirm-revoke"><b class="ct">Revoke access?</b>'
+                            f'<p><b>{esc(r.requester)}</b> loses SELECT on <b>{esc(asset)}</b>. '
+                            'The audit trail keeps the record as revoked.</p></div>', unsafe_allow_html=True)
+                st.button("Confirm revoke", key=f"revoke::{r.id}", type="primary", use_container_width=True,
                           on_click=_revoke, args=(r.id, r.requester, asset))
 
 
@@ -1014,8 +1025,10 @@ def pending_queue(queue: pd.DataFrame) -> None:
             key = f"note::{r.id}"
             c1, c2, c3 = st.columns([1.1, 3.2, 1.1], vertical_alignment="bottom")
             with c1.popover("Approve access", use_container_width=True):
-                st.markdown(f"Give **{r.requester}** SELECT on **{asset}**? This runs a real Unity Catalog "
-                            f"grant and adds **{money(r.licence_cost)}** a month.")
+                st.markdown(f'<div class="confirm"><b class="ct">Approve access?</b>'
+                            f'<p><b>{esc(r.requester)}</b> gets SELECT on <b>{esc(asset)}</b>, adding '
+                            f'<b>{esc(money(r.licence_cost))}</b> a month. The grant is recorded in the audit trail.</p></div>',
+                            unsafe_allow_html=True)
                 st.button("Confirm approve", key=f"approve::{r.id}", type="primary", use_container_width=True,
                           on_click=_approve, args=(r.id, r.requester, asset))
             c2.text_input("Rejection note", key=key, placeholder="Required to reject")
