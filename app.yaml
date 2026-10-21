@@ -1,0 +1,8 @@
+command: ["streamlit", "run", "app.py"]
+env:
+  # Plain value: attaching the warehouse as a resource needs MANAGE, which we don't have.
+  - name: DATABRICKS_WAREHOUSE_ID
+    value: a24300104bf8ac6c
+  # "Ask the audit trail" on the Audit page (space built by the backend, BACKEND.md section 4).
+  - name: GENIE_SPACE_ID
+    value: 01f1cd6fabb61c01a2d9f522b79791d0
