@@ -72,6 +72,60 @@ worth doing if there is a quiet minute; the rest is for after tonight.
   choose Refresh data").
 - `app.yaml` matches the backend: plain warehouse id, `GENIE_SPACE_ID` set.
 
+## Visual cleanup: a Revolut-style pass (after tonight, ~1 hour)
+
+Revolut's ethos in five words: one accent, big numbers, no borders, generous space, calm.
+The current page is close in spirit (dark, restrained, tabular numbers) but still looks like
+a styled Streamlit form. Concrete changes, each small:
+
+10. **One accent only** (`app.py:51-54`). The palette uses blue, green, amber and red as
+    first-class colours. Keep blue for actions; demote green/amber/red to small status dots or
+    pill text, never fills or borders. Revolut cards never shout.
+
+11. **Drop the borders, use fills** (`app.py:378`, `app.py:564`, `app.py:585`,
+    `.state`, `.empty`, `[data-testid="stMetric"]`). Every card is `border=True` plus a
+    1px rule. Replace with `border=False` and a slightly lighter surface (`--slate` on
+    `--navy`), radius 16px, padding 20px. Dashed empty-state boxes become plain muted text.
+
+12. **One number per card, big** (`.quote .amt`). The £ figure is already the hero at
+    2.1rem; make it 2.6rem, weight 600, and put the unit as a small muted line under it
+    everywhere a cost appears (approvals, active access, audit metrics). Metric tiles on the
+    Audit page: value 2.2rem, label 0.8rem uppercase with letter-spacing, no box.
+
+13. **Pills, not badges with borders** (`.badge`). Remove `border: 1px solid currentColor`;
+    use a 12% tint fill, 999px radius, 0.72rem, medium weight. Sensitivity and access state
+    become the same pill style.
+
+14. **Progress tracker as a thin line** (`.track`). The three-step strip is the most
+    "dashboard" element. Revolut would show one short sentence ("Waiting on Younis since
+    14:02") with a single thin progress line under it. Keep the dots, drop the pulse
+    animation, lose the boxes.
+
+15. **Tighter header** (`.dda-head`). Title at 1.6rem, drop the subtitle sentence (it reads
+    as marketing), move "Signed in as" into the sidebar bottom as a small avatar-less row.
+
+16. **Buttons** (`st.button` / `form_submit_button`). Primary: filled accent, 12px radius,
+    no border, full width inside cards. Secondary (Reject, Revoke): text-only in muted ink,
+    no outline. Streamlit's default secondary button has a grey border; override
+    `button[kind="secondary"] { border: 0; background: transparent }`.
+
+17. **Typography** (`.streamlit/config.toml`). `font = "sans serif"` gives system Helvetica.
+    Inter or Söhne-like faces are closest to Revolut; Inter is available via Google Fonts
+    only if the Apps CSP allows it, so test once. Body 15px, line-height 1.45, headings
+    weight 600, uppercase labels at 0.72rem with 0.06em tracking.
+
+18. **Sidebar** (`section[data-testid="stSidebar"]`). Remove the right border; page names
+    as plain text with the active one in accent, no pill background. "Refresh data" becomes
+    an icon-sized text button at the bottom, not a full-width box at the top.
+
+19. **Tables** (`st.dataframe` on all three pages). Default Streamlit grids look like
+    spreadsheets. Hide the toolbar (`toolbarMode` is already minimal), set row height 40px,
+    zebra off, header muted uppercase, and colour only the Status cell text. If time allows,
+    replace the Catalogue grid with the cards only; the grid duplicates them.
+
+Order of impact for the least work: 11 → 13 → 10 → 12 → 16. Those five are CSS-only and
+take about 30 minutes.
+
 ## Demo-day notes for whoever drives
 
 - After Patrick submits, press **Refresh data** in the sidebar before switching to Approvals.
