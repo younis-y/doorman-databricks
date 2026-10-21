@@ -23,8 +23,20 @@ can be rehearsed twice.
   (24), `vendor_faults` (394), `access_requests` (empty). All three data tables carry the tags
   `data_owner`, `sensitivity`, `licence_cost_gbp`, `description`.
 - Raw CSVs: `/Volumes/hackathon_bronze/sierra/landing/`
-- App: `sierra-front-door` (created 18:05, no code yet). Get its service principal (SP) id with
-  `databricks apps get sierra-front-door -p hack -o json | grep service_principal`.
+- App: `sierra-front-door` (created 18:05, no code yet), URL
+  https://sierra-front-door-7474652817268861.aws.databricksapps.com.
+  Its service principal (SP) client id: **`77fec403-23d6-48ee-809d-a1658acba2cc`**.
+
+## Already done (18:50, verified)
+
+- SP holds MANAGE, USE SCHEMA, SELECT on `hackathon_gold.sierra` and SELECT, MODIFY on
+  `access_requests` (§2 below is done).
+- App shared with group `users` CAN_USE (§3 done).
+- Genie views `v_request_log` and `v_entitlements` exist (§4 step 1 done).
+- `governance.py` tested end to end against the live schema: real GRANT applied and revoked.
+
+Still blocked on the mentor: USE CATALOG for the SP, CAN_USE on the warehouse for the SP,
+and a non-sierra analyst login.
 - Repo: github.com/younis-y/sierra-front-door (ask Younis for collaborator access).
 
 ## Your tasks, in order

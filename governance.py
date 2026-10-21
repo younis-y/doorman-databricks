@@ -66,9 +66,9 @@ def submit_request(requester: str, table_name: str, reason: str) -> str:
         raise ValueError("you already have a pending request for this table")
     rid = str(uuid.uuid4())
     run_sql(
-        f"INSERT INTO {REQUESTS} VALUES (:id, :r, :t, :reason, CAST(:cost AS DOUBLE), :appr, "
+        f"INSERT INTO {REQUESTS} SELECT :id, :r, :t, :reason, CAST(:cost AS DOUBLE), :appr, "
         "'pending', NULL, NULL, ai_classify(:reason, ARRAY('specific business need', 'vague')), "
-        "current_timestamp())",
+        "current_timestamp()",
         {"id": rid, "r": requester, "t": table_name, "reason": reason.strip(),
          "cost": tags.get("licence_cost_gbp", "0"), "appr": tags["data_owner"]},
     )
