@@ -277,7 +277,8 @@ section[data-testid="stSidebar"][aria-expanded="false"] { width: 0 !important; m
   padding-bottom: .9rem; border-bottom: 1px solid var(--rule); margin-bottom: 1.1rem; }
 .appname { font-size: .95rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em;
   display: flex; align-items: center; gap: .6rem; }
-.appname .emblem { flex: none; filter: drop-shadow(0 2px 6px rgba(37,99,235,.35)); }
+.appname .emblem { flex: none; width: 40px; height: 40px; filter: drop-shadow(0 2px 6px rgba(37,99,235,.35)); }
+.appname .name { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
 .appname span { color: var(--faint); font-weight: 400; }
 .acct { display: flex; align-items: center; gap: .55rem; color: var(--ink); font-size: .86rem; font-weight: 500;
   padding: .28rem .85rem .28rem .3rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.12);
@@ -564,7 +565,7 @@ bar_l, bar_r = st.columns([3, 1.4], vertical_alignment="center")
 # The front door, ajar: one glass tile shared with the favicon (assets/favicon.png is rendered from it).
 with open(os.path.join(ASSETS, "emblem.svg")) as _f:
     EMBLEM = _f.read().split("?>")[-1].strip()
-bar_l.markdown(f'<div class="appname">{EMBLEM}Desk Data Access <span>&nbsp;Unity Catalog entitlements</span></div>',
+bar_l.markdown(f'<div class="appname">{EMBLEM}<span class="name">Desk Data Access</span></div>',
                unsafe_allow_html=True)
 with bar_r:
     with st.popover(ME or "Not signed in"):
