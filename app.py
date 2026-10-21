@@ -575,9 +575,11 @@ with st.sidebar:
         st.rerun()
 
 bar_l, bar_r = st.columns([3, 1.4], vertical_alignment="center")
-# The front door, ajar: assets/emblem.svg is the single source for this header emblem and the favicon.
-with open(os.path.join(ASSETS, "emblem.svg")) as _f:
-    EMBLEM = _f.read().split("?>")[-1].strip()
+# Header mark: an open padlock, white line work, no tile. (assets/emblem.svg still backs the favicon.)
+EMBLEM = ('<svg class="emblem" viewBox="0 0 28 28" fill="none" aria-hidden="true">'
+          '<rect x="7" y="12.5" width="14" height="10" rx="2.2" stroke="#FFFFFF" stroke-width="1.6"/>'
+          '<path d="M10.5 12.5V9a3.5 3.5 0 0 1 7 0" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>'
+          '<circle cx="14" cy="17.5" r="1.3" fill="#FFFFFF"/></svg>')
 bar_l.markdown(f'<div class="appname">{EMBLEM}<span class="name">Desk Data Access</span></div>',
                unsafe_allow_html=True)
 with bar_r:
