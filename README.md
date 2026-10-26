@@ -1,13 +1,27 @@
-# Doorman
+<p align="center">
+  <img src="docs/img/banner.png" alt="Doorman, winner of the Databricks UK Innovation Hackathon 2026" width="720">
+</p>
 
-The doorman for market data on a trading desk, built as a Databricks App. (Internally the
-project is still `desk-data-access`.) An
-analyst asks for a table and gives a reason. The table's owner sees the reason and the
-monthly licence cost, then approves or rejects. Approval applies a **real Unity Catalog
-grant**. Every step lands in one audit table that Genie can answer questions about.
+<p align="center">
+  <b>Self-service data access on Databricks, governed by default.</b><br>
+  An analyst asks for a table. Its owner approves. The approval is a real Unity Catalog <code>GRANT</code>, and every step is audited.
+</p>
 
-Built in one evening for the Colibri Digital hackathon (21 Oct 2026), Track 3: *The
-Governed Front Door*.
+<p align="center">
+  <a href="https://github.com/younis-y/desk-data-access/releases/tag/demo-video">Demo video (84 s)</a> ·
+  <a href="#run-it-locally">Run it locally</a> ·
+  <a href="#how-it-works">How it works</a>
+</p>
+
+---
+
+On a trading desk, getting access to a dataset usually means an email to someone who may or may not own it, a grant done by hand, and no record of why. Doorman replaces that with one app: request with a reason, see the licence cost, approve or reject, and keep the receipt.
+
+Built in one evening by Team Sierra at the **Databricks UK Innovation Hackathon** (Colibri Digital x Community Stack, London, 21 Oct 2026), Track 3: *The Governed Front Door*. It won.
+
+<p align="center">
+  <img src="docs/img/approvals.png" alt="Approvals page: three requests with reason, sensitivity, a vague-reason flag and the monthly licence cost" width="720">
+</p>
 
 ## How it works
 
@@ -27,80 +41,80 @@ flowchart LR
 
 Three rules make it governed by default:
 
-1. **The catalogue is the tags.** A table is requestable only if it carries a `data_owner`
-   tag in Unity Catalog. Tag a table and it appears in the app; no code change. The same
-   tags carry `sensitivity` and `licence_cost_gbp`, so the approver sees what a yes costs.
-2. **Only the tagged owner can decide**, and the decision is a real `GRANT SELECT` (or a
-   rejection with a note the requester sees). The app never flips a flag of its own.
-3. **One table is both the queue and the receipt.** `access_requests` holds every request;
-   pending rows are the approval queue, all rows are the audit trail. A failed grant is
-   recorded with its error, never hidden.
+1. **The catalogue is the tags.** A table appears in the app only if it carries a `data_owner` tag in Unity Catalog. Tag a table and it is requestable; no code change. The `sensitivity` and `licence_cost_gbp` tags tell the approver what a yes costs.
+2. **Only the tagged owner decides**, and the decision is a real `GRANT SELECT`, or a rejection with a note the requester sees. The app never keeps a permission flag of its own.
+3. **One table is both the queue and the receipt.** Pending rows in `access_requests` are the approval queue; all rows are the audit trail. A failed grant is recorded with its error, never hidden.
 
-The app runs SQL as the signed-in user (Databricks Apps `sql` user scope), so a person's
-rights in the app are exactly their rights in Unity Catalog.
+The app runs SQL as the signed-in user (the Databricks Apps `sql` user scope), so a person's rights in the app are exactly their rights in Unity Catalog. Each reason is also scored by `ai_classify` so owners see a **Vague reason** flag before they approve.
 
 ## The pages
 
 | Page | What you see |
 |---|---|
-| **Catalogue** | Every tagged table with owner, sensitivity and £/month; request access with a reason; your own requests and their state |
-| **Approvals** | Requests waiting on you, with the reason, the cost and a "vague reason" flag from `ai_classify`; approve, reject, or revoke access you granted earlier |
-| **Audit** | Every request ever made, filterable; headline counts; "Ask the audit trail" through a Genie space with three tested questions |
+| **Catalogue** | Every tagged table with its owner, sensitivity and £/month. Request access with a reason and follow your own requests. |
+| **Approvals** | Requests waiting on you, with the reason, the cost and the vague-reason flag. Approve, reject with a note, or revoke access you granted earlier. |
+| **Audit** | Every request ever made, filterable, with headline counts and "Ask the audit trail", a Genie space over two audit views. |
 
-## Run it
+<p align="center">
+  <img src="docs/img/audit.png" alt="Audit page: counts by status, recorded licence spend and the full request log" width="720">
+</p>
 
-**On this machine, no Databricks** (the hackathon workspace was shut down on 22 Oct 2026):
+## Run it locally
+
+No Databricks account needed. The hackathon workspace was shut down on 22 Oct 2026, so this is the way to try it now.
 
 ```bash
+git clone https://github.com/younis-y/desk-data-access.git
+cd desk-data-access
 pip install streamlit pandas
 ./run-local.sh            # http://localhost:8501
 ```
 
-Data comes from a SQLite file built on first run from `local/*.csv` (same six products and
-tags as `sql/`). Approvals are simulated and live in the browser session, so a refresh clears
-them. The Genie box is hidden.
+Data comes from a SQLite file built on first run from `local/*.csv`, with the same products and tags as `sql/`. Approvals are simulated in the browser session, and an **Act as** switch in the sidebar lets one laptop play both analyst and owner. The Genie box is hidden off-platform.
 
-Deployed (historical): `desk-data-access` in the hackathon workspace, now gone.
+## Run it on Databricks
 
-Against a Databricks workspace (runs as you, grants are real):
+Against your own workspace, where grants are real:
 
 ```bash
 pip install streamlit "databricks-sdk>=0.60" pandas
-databricks auth login --host https://dbc-ea0a1678-b98c.cloud.databricks.com --profile hack
-GOVERNANCE=live DEV_USER=you@example.com DATABRICKS_CONFIG_PROFILE=hack \
-DATABRICKS_WAREHOUSE_ID=a24300104bf8ac6c streamlit run app.py
+databricks auth login --host https://<your-workspace>.cloud.databricks.com --profile <profile>
+GOVERNANCE=live DEV_USER=you@example.com DATABRICKS_CONFIG_PROFILE=<profile> \
+DATABRICKS_WAREHOUSE_ID=<warehouse-id> streamlit run app.py
 ```
 
-Without `GOVERNANCE=live` the app uses `governance_stub.py`, which simulates everything in
-memory and touches nothing in Unity Catalog. The sidebar "Act as" switch (local only) lets
-one laptop play analyst and owner.
+Run `sql/setup.sql` once first to create the tagged tables and `access_requests`. To deploy as a Databricks App, `app.yaml` holds the start command and environment.
 
-Tests (offline, SQL mocked):
+| Variable | Default | Purpose |
+|---|---|---|
+| `GOVERNANCE` | `stub` when `DEV_USER` is set, else `live` | `live` applies real grants; `stub` simulates everything in memory |
+| `DATA_CATALOG`, `DATA_SCHEMA` | `hackathon_gold`, `sierra` | Where the tagged tables and `access_requests` live |
+| `DATABRICKS_WAREHOUSE_ID` | none | SQL warehouse for the Statement Execution API |
+| `GENIE_SPACE_ID` | empty (box hidden) | Enables "Ask the audit trail" |
+| `LOCAL_DB` | unset | Path to a SQLite file; runs the same queries offline |
+
+## Tests
 
 ```bash
-python3 -m pytest -q tests
+python3 -m pytest -q tests     # 40 tests, offline, SQL mocked
 ```
 
-## Layout
+## Project layout
 
-| File | Role |
+| Path | Role |
 |---|---|
-| `app.py` | The Streamlit app: three pages, reads only, every change goes through `governance` |
+| `app.py` | The Streamlit app. Three pages; it only reads, and every change goes through `governance` |
 | `governance.py` | `submit_request`, `approve`, `reject`, `revoke`: the only code that grants |
+| `governance_stub.py` | The in-memory stand-in used locally and in tests |
 | `db.py` | One `run_sql` over the Statement Execution API, as the signed-in user when a token is forwarded |
-| `sql/setup.sql` | Data products, tags and the `access_requests` table (ran once) |
-| `sql/genie_views.sql` | The two views the Genie space is allowed to see |
-| `sql/reset_demo.sql` | Revoke and clear one requester's rows between rehearsals |
-| `AGENTS.md`, `BACKEND.md` | The briefs the two halves of the team built against |
-| `UI_REVIEW.md` | Review of the front end with a follow-up list |
+| `sql/` | Setup, demo catalogue, the two Genie views, and a reset script for rehearsals |
+| `local/` | CSVs and the builder for the offline SQLite copy |
+| `AGENTS.md`, `docs/` | The briefs the team built against, a front-end review, and the pitch deck |
 
-## What it does not do yet
+## Not built yet
 
-Expiring access, notifications outside the app, column masks, running as the app's own
-identity (the sandbox would not grant it catalog or warehouse rights, so the user-scope
-route was used instead).
+Expiring access, notifications outside the app, column masks, and running as the app's own service principal (the sandbox would not grant it catalog or warehouse rights, so the user-scope route was used instead).
 
-## Team
+## Team Sierra
 
-Jose and Malik (front end), Younis and Patrick (data, governance, platform). Built with
-Codex and Claude Code.
+**Younis Younis** built the back end: governance, grants, data model and platform. **Jose** and **Malik** built the front end. **Patrick** tested it and built the test datasets. Built with Claude Code and Codex.
