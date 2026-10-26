@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/younis-y/desk-data-access/releases/tag/demo-video">Demo video (84 s)</a> ·
+  <a href="https://github.com/younis-y/doorman-databricks/releases/tag/demo-video">Demo video (84 s)</a> ·
   <a href="#run-it-locally">Run it locally</a> ·
   <a href="#how-it-works">How it works</a>
 </p>
@@ -20,7 +20,13 @@ On a trading desk, getting access to a dataset usually means an email to someone
 Built in one evening by Team Sierra at the **Databricks UK Innovation Hackathon** (Colibri Digital x Community Stack, London, 21 Oct 2026), Track 3: *The Governed Front Door*. It won.
 
 <p align="center">
-  <img src="docs/img/approvals.png" alt="Approvals page: three requests with reason, sensitivity, a vague-reason flag and the monthly licence cost" width="720">
+  <img src="docs/img/before-after.png" alt="Before and after Doorman: who owns the table, how to ask, what a yes costs, who grants access, and who has access and why" width="860">
+</p>
+
+## Four steps, two people
+
+<p align="center">
+  <img src="docs/img/four-steps.png" alt="The four steps: the analyst asks with a reason, the owner approves knowing the cost, the analyst uses the table straight away, and every step is on record" width="860">
 </p>
 
 ## How it works
@@ -55,17 +61,13 @@ The app runs SQL as the signed-in user (the Databricks Apps `sql` user scope), s
 | **Approvals** | Requests waiting on you, with the reason, the cost and the vague-reason flag. Approve, reject with a note, or revoke access you granted earlier. |
 | **Audit** | Every request ever made, filterable, with headline counts and "Ask the audit trail", a Genie space over two audit views. |
 
-<p align="center">
-  <img src="docs/img/audit.png" alt="Audit page: counts by status, recorded licence spend and the full request log" width="720">
-</p>
-
 ## Run it locally
 
 No Databricks account needed. The hackathon workspace was shut down on 22 Oct 2026, so this is the way to try it now.
 
 ```bash
-git clone https://github.com/younis-y/desk-data-access.git
-cd desk-data-access
+git clone https://github.com/younis-y/doorman-databricks.git
+cd doorman-databricks
 pip install streamlit pandas
 ./run-local.sh            # http://localhost:8501
 ```
